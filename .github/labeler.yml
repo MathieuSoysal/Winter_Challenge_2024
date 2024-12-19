@@ -1,0 +1,70 @@
+# Configuration for Auto Labeler during pull request
+#
+# See https://github.com/actions/labeler for file format
+# and https://github.com/google/flatbuffers/labels for a list of valid labels
+#
+# See .github/workflows/label.yml for Github Action workflow script
+
+rust:
+  - '**/*.rs'
+  - rust/**/*
+  - src/idl_gen_rust.cpp
+
+cargo:
+  - Cargo.toml
+  - Cargo.lock
+  - rust-toolchain
+
+code:
+  - src/**/*
+
+documentation:
+  - docs/**/*
+  - '**/*.md'
+
+CI:
+  - '.github/**/*'
+  - '.appveyor/**/*'
+  - '.travis/**/*'
+  - '.bazelci/**/*'
+  - .travis.yml
+  - appveyor.yml
+
+devcontainer:
+  - .devcontainer/**/*
+
+fuzzing:
+  - fuzz/**/*
+
+feature:
+ - head-branch: ['^feature', 'feature']
+
+bug:
+ - head-branch: ['^bug', 'bug']
+
+documentation:
+ - head-branch: ['^docs', 'docs']
+
+chore:
+ - head-branch: ['^chore', 'chore']
+
+ci:
+ - head-branch: ['^ci', 'ci']
+
+build:
+  - head-branch: ['^build', 'build']
+
+test:
+  - head-branch: ['^test', 'test']
+
+perf:
+  - head-branch: ['^perf', 'perf']
+
+fix:
+  - head-branch: ['^fix', 'fix']
+
+refactor:
+  - head-branch: ['^refactor', 'refactor']
+
+style:
+  - head-branch: ['^style', 'style']

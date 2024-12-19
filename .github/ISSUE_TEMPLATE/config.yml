@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question on how to use codingame-rust-template
+    about: For general-purpose questions and answers, see the Discussions section.
+    url: https://github.com/MathieuSoysal/CodinGame_Rust_template/discussions

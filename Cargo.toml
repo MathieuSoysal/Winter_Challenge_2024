@@ -1,0 +1,30 @@
+[package]
+name = "codingame_rust_template"
+description = "CodinGame Rust template that contains automatic benchmarking, automatic mutation testing, automatic fuzz testing. "
+repository = "https://github.com/MathieuSoysal/CodinGame_Rust_template"
+readme = "README.md"
+version = "0.1.0"
+authors = ["MathieuSoysal <hsoysal@student.42.fr>"]
+license = "Apache-2.0"
+edition = "2021"
+
+[dependencies]
+chrono = "0.4.26"
+itertools = "0.11.0"
+libc = "0.2.147"
+rand = "0.8.5"
+regex = "1.8.4"
+time = "0.3.22"
+
+[dev-dependencies]
+criterion = "0.4"
+
+
+[[bench]]
+name = "my_benchmark"
+harness = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+# [dependencies]
+# prusti-contracts = "0.2.0"
