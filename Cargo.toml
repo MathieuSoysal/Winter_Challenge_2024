@@ -1,7 +1,7 @@
 [package]
-name = "codingame_rust_template"
-description = "CodinGame Rust template that contains automatic benchmarking, automatic mutation testing, automatic fuzz testing. "
-repository = "https://github.com/MathieuSoysal/CodinGame_Rust_template"
+name = "winter_challenge_2024"
+description = "Winter Challenge 2024 that contains automatic benchmarking, automatic mutation testing, automatic fuzz testing. "
+repository = "https://github.com/MathieuSoysal/Winter_Challenge_2024"
 readme = "README.md"
 version = "0.1.0"
 authors = ["MathieuSoysal <hsoysal@student.42.fr>"]
@@ -18,7 +18,6 @@ time = "0.3.22"
 
 [dev-dependencies]
 criterion = "0.4"
-
 
 [[bench]]
 name = "my_benchmark"

@@ -90,8 +90,8 @@ download() {
   url="$2"
 
   if has curl && curl_is_snap; then
-    warn "curl installed through snap cannot download CodinGame Rust template."
-    warn "See https://github.com/MathieuSoysal/CodinGame_Rust_template/issues/5403 for details."
+    warn "curl installed through snap cannot download Winter Challenge 2024."
+    warn "See https://github.com/MathieuSoysal/Winter_Challenge_2024/issues/5403 for details."
     warn "Searching for other HTTP download programs..."
   fi
 
@@ -110,10 +110,10 @@ download() {
 
   error "Command failed (exit code $rc): ${BLUE}${cmd}${NO_COLOR}"
   printf "\n" >&2
-  info "This is likely due to CodinGame Rust template not yet supporting your configuration."
+  info "This is likely due to Winter Challenge 2024 not yet supporting your configuration."
   info "If you would like to see a build for your configuration,"
   info "please create an issue requesting a build for ${MAGENTA}${TARGET}${NO_COLOR}:"
-  info "${BOLD}${UNDERLINE}https://github.com/MathieuSoysal/CodinGame_Rust_template/issues/new/${NO_COLOR}"
+  info "${BOLD}${UNDERLINE}https://github.com/MathieuSoysal/Winter_Challenge_2024/issues/new/${NO_COLOR}"
   return $rc
 }
 
@@ -138,7 +138,7 @@ unpack() {
   error "Unknown package extension."
   printf "\n"
   info "This almost certainly results from a bug in this script--please file a"
-  info "bug report at https://github.com/MathieuSoysal/CodinGame_Rust_template/issues"
+  info "bug report at https://github.com/MathieuSoysal/Winter_Challenge_2024/issues"
   return 1
 }
 
@@ -146,7 +146,7 @@ usage() {
   printf "%s\n" \
     "install.sh [option]" \
     "" \
-    "Fetch and install the latest version of CodinGame Rust template, if CodinGame Rust template is already" \
+    "Fetch and install the latest version of Winter Challenge 2024, if Winter Challenge 2024 is already" \
     "installed it will be updated to the latest version."
 
   printf "\n%s\n" "Options"
@@ -179,12 +179,12 @@ install() {
 
   if test_writeable "${BIN_DIR}"; then
     sudo=""
-    msg="Installing CodinGame Rust template, please wait…"
+    msg="Installing Winter Challenge 2024, please wait…"
   else
     warn "Escalated permissions are required to install to ${BIN_DIR}"
     elevate_priv
     sudo="sudo"
-    msg="Installing CodinGame Rust template as root, please wait…"
+    msg="Installing Winter Challenge 2024 as root, please wait…"
   fi
   info "$msg"
 
@@ -317,11 +317,11 @@ is_build_available() {
   )
 
   if [ "${good}" != "1" ]; then
-    error "${arch} builds for ${platform} are not yet available for CodinGame Rust template"
+    error "${arch} builds for ${platform} are not yet available for Winter Challenge 2024"
     printf "\n" >&2
     info "If you would like to see a build for your configuration,"
     info "please create an issue requesting a build for ${MAGENTA}${target}${NO_COLOR}:"
-    info "${BOLD}${UNDERLINE}https://github.com/MathieuSoysal/CodinGame_Rust_template/issues/new/${NO_COLOR}"
+    info "${BOLD}${UNDERLINE}https://github.com/MathieuSoysal/Winter_Challenge_2024/issues/new/${NO_COLOR}"
     printf "\n"
     exit 1
   fi
@@ -341,7 +341,7 @@ if [ -z "${ARCH-}" ]; then
 fi
 
 if [ -z "${BASE_URL-}" ]; then
-  BASE_URL="https://github.com/MathieuSoysal/CodinGame_Rust_template/releases"
+  BASE_URL="https://github.com/MathieuSoysal/Winter_Challenge_2024/releases"
 fi
 
 # Non-POSIX shells can break once executing code due to semantic differences
@@ -439,10 +439,10 @@ fi
 
 URL="${BASE_URL}/latest/download/starship-${TARGET}.${EXT}"
 info "Tarball URL: ${UNDERLINE}${BLUE}${URL}${NO_COLOR}"
-confirm "Install CodinGame Rust template ${GREEN}latest${NO_COLOR} to ${BOLD}${GREEN}${BIN_DIR}${NO_COLOR}?"
+confirm "Install Winter Challenge 2024 ${GREEN}latest${NO_COLOR} to ${BOLD}${GREEN}${BIN_DIR}${NO_COLOR}?"
 check_bin_dir "${BIN_DIR}"
 
 install "${EXT}"
-completed "CodinGame Rust template installed"
+completed "Winter Challenge 2024 installed"
 
 printf '\n'

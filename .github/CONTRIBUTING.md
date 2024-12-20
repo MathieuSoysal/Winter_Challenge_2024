@@ -1,6 +1,6 @@
 ## Contributing
 
-Hi! Thanks for your interest in contributing to the CodinGame Rust template!
+Hi! Thanks for your interest in contributing to the Winter Challenge 2024!
 
 We accept pull requests for bug fixes and features where we've discussed the approach in an issue and given the go-ahead for a community member to work on it. We'd also love to hear about ideas for new features as issues.
 
@@ -48,10 +48,10 @@ Please note that this project adheres to a [Contributor Code of Conduct][code-of
 - [GitHub Help][]
 
 
-[bug issues]: https://github.com/MathieuSoysal/CodinGame_Rust_template/issues?q=is%3Aopen+is%3Aissue+label%3Abug
-[feature request issues]: https://github.com/MathieuSoysal/CodinGame_Rust_template/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
-[hw]: https://github.com/MathieuSoysal/CodinGame_Rust_template/labels/help%20wanted
-[gfi]: https://github.com/MathieuSoysal/CodinGame_Rust_template/labels/good%20first%20issue
+[bug issues]: https://github.com/MathieuSoysal/Winter_Challenge_2024/issues?q=is%3Aopen+is%3Aissue+label%3Abug
+[feature request issues]: https://github.com/MathieuSoysal/Winter_Challenge_2024/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement
+[hw]: https://github.com/MathieuSoysal/Winter_Challenge_2024/labels/help%20wanted
+[gfi]: https://github.com/MathieuSoysal/Winter_Challenge_2024/labels/good%20first%20issue
 [legal]: https://docs.github.com/en/free-pro-team@latest/github/site-policy/github-terms-of-service#6-contributions-under-repository-license
 [license]: ../LICENSE
 [code-of-conduct]: ./CODE-OF-CONDUCT.md

@@ -167,7 +167,7 @@ jobs:
     permissions:
       pull-requests: write
     env:
-      BENCHER_PROJECT: codingame-rust-template
+      BENCHER_PROJECT: winter-challenge-2024
       BENCHER_TESTBED: ubuntu-latest
       BENCHER_ADAPTER: rust
       BENCHER_API_TOKEN: ${{ secrets.BENCHER_API_TOKEN }}

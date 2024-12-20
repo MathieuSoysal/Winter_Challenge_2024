@@ -59,18 +59,18 @@
 
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
-  <Product Id='*' Name='codingame-rust-template' UpgradeCode='0E489D6B-0FEA-4B6E-B57F-62DD1E892C46' Manufacturer='CodinGame Rust template Contributors' Language='1033' Codepage='1252' Version='$(var.Version)'>
+  <Product Id='*' Name='winter-challenge-2024' UpgradeCode='0E489D6B-0FEA-4B6E-B57F-62DD1E892C46' Manufacturer='Winter Challenge 2024 Contributors' Language='1033' Codepage='1252' Version='$(var.Version)'>
 
-    <Package Id='*' Keywords='Installer' Description='CodinGame Rust template that contains automatic benchmarking, automatic mutation testing, automatic fuzz testing. ' Manufacturer='CodinGame Rust template Contributors' InstallerVersion='450' Languages='1033' Compressed='yes' InstallScope='perMachine' SummaryCodepage='1252' />
+    <Package Id='*' Keywords='Installer' Description='Winter Challenge 2024 that contains automatic benchmarking, automatic mutation testing, automatic fuzz testing. ' Manufacturer='Winter Challenge 2024 Contributors' InstallerVersion='450' Languages='1033' Compressed='yes' InstallScope='perMachine' SummaryCodepage='1252' />
 
     <MajorUpgrade Schedule='afterInstallInitialize' DowngradeErrorMessage='A newer version of [ProductName] is already installed. Setup will now exit.' />
 
     <Media Id='1' Cabinet='media1.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
-    <Property Id='DiskPrompt' Value='codingame-rust-template Installation' />
+    <Property Id='DiskPrompt' Value='winter-challenge-2024 Installation' />
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='$(var.PlatformProgramFilesFolder)' Name='PFiles'>
-        <Directory Id='APPLICATIONFOLDER' Name='codingame-rust-template'>
+        <Directory Id='APPLICATIONFOLDER' Name='winter-challenge-2024'>
 
           <!--
                       Enabling the license sidecar file in the installer is a four step process:
@@ -95,7 +95,7 @@
               <Environment Id='PATH' Name='PATH' Value='[Bin]' Permanent='no' Part='last' Action='set' System='yes' />
             </Component>
             <Component Id='binary0' Guid='*'>
-              <File Id='exe0' Name='codingame-rust-template.exe' DiskId='1' Source='$(var.CargoTargetBinDir)\codingame-rust-template.exe' KeyPath='yes' />
+              <File Id='exe0' Name='winter-challenge-2024.exe' DiskId='1' Source='$(var.CargoTargetBinDir)\winter-challenge-2024.exe' KeyPath='yes' />
             </Component>
           </Directory>
         </Directory>
@@ -127,7 +127,7 @@
     <Icon Id='ProductICO' SourceFile='media\icon.ico' />
     <Property Id='ARPPRODUCTICON' Value='ProductICO' />
 
-    <Property Id='ARPHELPLINK' Value='https://github.com/MathieuSoysal/CodinGame_Rust_template' />
+    <Property Id='ARPHELPLINK' Value='https://github.com/MathieuSoysal/Winter_Challenge_2024' />
 
     <UI>
       <UIRef Id='WixUI_FeatureTree' />
