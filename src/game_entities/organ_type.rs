@@ -1,9 +1,9 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganType {
-    Root = 0b1111,
-    Basic = 0b1000,
-    Harvester = 0b0110,
-    Sporer = 0b0011,
+    Root = 0b0001,
+    Basic = 0b0010,
+    Harvester = 0b0011,
+    Sporer = 0b0100,
     Tentacle = 0b0101,
 }
 
@@ -19,6 +19,17 @@ impl OrganType {
         }
     }
 
+    pub fn from_index(i: usize) -> OrganType {
+        match i {
+            0b0001 => OrganType::Root,
+            0b0010 => OrganType::Basic,
+            0b0011 => OrganType::Harvester,
+            0b0100 => OrganType::Sporer,
+            0b0101 => OrganType::Tentacle,
+            _ => panic!("Invalid organ type index {}", i),
+        }
+    }
+
     pub fn to_str(&self) -> &str {
         match self {
             OrganType::Root => "ROOT",
@@ -31,11 +42,11 @@ impl OrganType {
 
     pub fn get_cost(&self) -> u32 {
         match self {
-            OrganType::Root => 0,
-            OrganType::Basic => 10,
-            OrganType::Harvester => 20,
-            OrganType::Sporer => 30,
-            OrganType::Tentacle => 40,
+            OrganType::Root => 0b1111,
+            OrganType::Basic => 0b1000,
+            OrganType::Harvester => 0b0110,
+            OrganType::Sporer => 0b0011,
+            OrganType::Tentacle => 0b0101,
         }
     }
 

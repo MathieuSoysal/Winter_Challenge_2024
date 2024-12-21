@@ -2,14 +2,14 @@ use std::collections::HashMap;
 
 use super::{organ::Organ, protain_summary::ProteinSummary, protein::Protein};
 
-pub struct Player<'a> {
+pub struct Player {
     storage: HashMap<Protein, u8>,
-    organs: Vec<Box<Organ<'a>>>,
-    roots: Vec<Box<Organ<'a>>>,
+    organs: Vec<Box<Organ>>,
+    roots: Vec<Box<Organ>>,
     protein_summary: ProteinSummary,
 }
 
-impl Player<'_> {
+impl Player {
     pub fn new() -> Self {
         Player {
             storage: HashMap::new(),

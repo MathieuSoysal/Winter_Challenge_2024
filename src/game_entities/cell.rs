@@ -1,149 +1,109 @@
-use super::{coord::Coord, organ::Organ, player::Player, protein::Protein};
+use super::protein::Protein;
 
-pub struct Cell<'a> {
-    pos: Coord,
-    obstacle: bool,
-    protein: Option<Protein>,
-    organ: Option<&'a Organ<'a>>,
-}
+pub type Cell = u16;
 
-impl<'a> Cell<'a> {
-    pub fn new(
-        pos: Coord,
-        obstacle: bool,
-        protein: Option<Protein>,
-        organ: Option<&'a Organ<'a>>,
-    ) -> Self {
-        Cell {
-            pos,
-            obstacle,
-            protein,
-            organ,
-        }
-    }
+const EMPTY: Cell = 0b00;
+const OBSTACLE: Cell = 0b01;
+const PROTEIN: Cell = 0b10;
+const ORGAN: Cell = 0b11;
 
-    pub fn new_wall(pos: Coord) -> Self {
-        Cell {
-            pos,
-            obstacle: true,
-            protein: None,
-            organ: None,
-        }
-    }
+const MASK_TYPE: Cell = 0b11;
+const MASK_PROTEIN: Cell = 0b11111100;
+const MASK_ORGAN: Cell = 0b11111100;
 
-    pub fn pos(&self) -> Coord {
-        self.pos.clone()
-    }
-
-    pub fn get_protein(&self) -> Option<Protein> {
-        self.protein
-    }
-
-    pub fn get_organ(&self) -> Option<&Organ> {
-        self.organ.as_deref()
-    }
-
-    pub fn set_protein(&mut self, protein: Protein) {
-        self.protein = Some(protein);
-    }
-
-    pub fn set_obstacle(&mut self) {
-        self.obstacle = true;
-        self.protein = None;
-    }
-
-    pub fn unset_obstacle(&mut self) {
-        self.obstacle = false;
-    }
-
-    pub fn place_organ(&mut self, organ: &'a Organ) {
-        self.organ = Some(organ);
-        self.obstacle = false;
-        self.protein = None;
-    }
-
-    pub fn obstacle(&self) -> bool {
-        self.obstacle
-    }
-
-    pub fn is_organ(&self) -> bool {
-        self.organ.is_some()
-    }
-
-    pub fn is_protein(&self) -> bool {
-        self.protein.is_some()
-    }
-
-    pub fn is_obstacle(&self) -> bool {
-        self.obstacle
-    }
-
-    pub fn clear(&mut self) {
-        self.obstacle = false;
-        self.protein = None;
-        self.organ = None;
-    }
-
-    pub fn has_protein(&self) -> bool {
-        self.protein.is_some()
-    }
-
-    pub fn has_organ(&self) -> bool {
-        self.organ.is_some()
-    }
-
-    pub fn has_tentacle(&self, owner: &Player, facing: Coord) -> bool {
-        self.organ.as_ref().map_or(false, |organ| {
-            organ.get_owner().eq(&owner) && organ.is_tentacle() && organ.is_faced_to(facing)
-        })
-    }
-
-    pub fn assign_new_cell(&mut self, cell: &Cell<'a>) {
-        self.obstacle = cell.obstacle;
-        self.protein = cell.protein;
-        self.organ = cell.organ;
+pub fn new(obstacle: bool, protein: Option<Protein>, organ_id: Option<u16>) -> Cell {
+    match (obstacle, protein, organ_id) {
+        (true, _, _) => OBSTACLE,
+        (false, None, None) => EMPTY,
+        (false, Some(protein), None) => (protein as u16) << 2 | PROTEIN,
+        (false, None, Some(organ_id)) => organ_id << 2 | ORGAN,
+        _ => panic!("Invalid cell"),
     }
 }
+
+pub fn new_wall() -> Cell {
+    OBSTACLE
+}
+
+pub fn get_protein(cell: Cell) -> Option<Protein> {
+    if cell & 0b11 == PROTEIN {
+        Protein::from_id((cell >> 2) as u8)
+    } else {
+        None
+    }
+}
+
+pub fn get_organ_id(cell: Cell) -> Option<u16> {
+    if contains_organ(cell) {
+        Some(cell >> 2)
+    } else {
+        None
+    }
+}
+
+pub fn set_protein(cell: &mut Cell, protein: Protein) {
+    *cell = (protein as u16) << 2 | PROTEIN;
+}
+
+pub fn set_obstacle(cell: &mut Cell) {
+    *cell = OBSTACLE;
+}
+
+pub fn unset_obstacle(cell: &mut Cell) {
+    *cell = EMPTY;
+}
+
+pub fn place_organ(cell: &mut Cell, organ_id: u16) {
+    *cell = organ_id << 2 | ORGAN;
+}
+
+pub fn is_obstacle(cell: Cell) -> bool {
+    get_type_cell(cell) == OBSTACLE
+}
+
+pub fn contains_organ(cell: Cell) -> bool {
+    get_type_cell(cell) == ORGAN
+}
+
+pub fn contains_protein(cell: Cell) -> bool {
+    get_type_cell(cell) == PROTEIN
+}
+
+fn get_type_cell(cell: Cell) -> Cell {
+    cell & MASK_TYPE
+}
+
+pub fn clear(cell: &mut Cell) {
+    *cell = EMPTY;
+}
+
+// pub fn has_tentacle(&self, owner: &Player, facing: Coord) -> bool {
+//     self.organ.as_ref().map_or(false, |organ| {
+//         organ.get_owner().eq(&owner) && organ.is_tentacle() && organ.is_faced_to(facing)
+//     })
+// }
 
 #[cfg(test)]
 mod tests {
-    use crate::game_entities::{coord, organ};
+    use crate::game_entities::cell;
 
     use super::*;
 
     #[test]
     fn test_cell() {
-        let coord = coord::new(0, 0);
-        let cell = Cell::new(coord, false, Some(Protein::A), None);
-        assert_eq!(cell.pos(), coord);
-        assert_eq!(cell.obstacle(), false);
-        assert_eq!(cell.get_protein(), Some(Protein::A));
-        assert_eq!(cell.is_organ(), false);
-        assert_eq!(cell.is_protein(), true);
-    }
-
-    #[test]
-    fn test_cell_organ() {
-        let binding = Player::new();
-        let organ = organ::Organ::new_from_input(1, 1, "A", &binding, 1, "S", 1, 1);
-        let coord = coord::new(0, 0);
-        let cell = Cell::new(coord, false, None, Some(&organ));
-        assert_eq!(cell.pos(), coord);
-        assert_eq!(cell.obstacle(), false);
-        assert_eq!(cell.get_protein(), None);
-        assert_eq!(cell.get_organ().unwrap().get_id(), 1);
-        assert_eq!(cell.is_organ(), true);
-        assert_eq!(cell.is_protein(), false);
+        let cell = cell::new(false, Some(Protein::A), None);
+        assert_eq!(cell::is_obstacle(cell), false);
+        assert_eq!(cell::get_protein(cell), Some(Protein::A));
+        assert_eq!(cell::contains_organ(cell), false);
+        assert_eq!(cell::contains_protein(cell), true);
     }
 
     #[test]
     fn test_cell_wall() {
-        let coord = coord::new(0, 0);
-        let cell = Cell::new(coord, true, None, None);
-        assert_eq!(cell.pos(), coord);
-        assert_eq!(cell.obstacle(), true);
-        assert_eq!(cell.get_protein(), None);
-        assert_eq!(cell.is_organ(), false);
-        assert_eq!(cell.is_protein(), false);
+        let cell = cell::new(true, None, None);
+        assert_eq!(cell::is_obstacle(cell), true);
+        assert_eq!(cell::get_protein(cell), None);
+        assert_eq!(cell::contains_organ(cell), false);
+        assert_eq!(cell::contains_protein(cell), false);
     }
 }

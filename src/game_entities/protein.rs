@@ -1,9 +1,9 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Protein {
-    A,
-    B,
-    C,
-    D,
+    A = 0b00,
+    B = 0b01,
+    C = 0b10,
+    D = 0b11,
 }
 
 impl Protein {

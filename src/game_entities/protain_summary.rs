@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use super::protein::Protein;
+
 pub struct ProteinSummary {
     from_growth: HashMap<Protein, u32>,
     from_harvest: HashMap<Protein, u32>,

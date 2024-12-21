@@ -2,11 +2,11 @@ use super::coord::{self, Coord};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganDirection {
-    North,
-    West,
-    South,
-    East,
-    X,
+    North = 0b000,
+    West = 0b001,
+    South = 0b010,
+    East = 0b011,
+    X = 0b100,
 }
 
 impl OrganDirection {
@@ -29,6 +29,17 @@ impl OrganDirection {
             'E' => OrganDirection::East,
             'X' => OrganDirection::X,
             _ => panic!("Invalid direction {}", c),
+        }
+    }
+
+    pub fn from_index(i: usize) -> OrganDirection {
+        match i {
+            0b000 => OrganDirection::North,
+            0b001 => OrganDirection::West,
+            0b010 => OrganDirection::South,
+            0b011 => OrganDirection::East,
+            0b100 => OrganDirection::X,
+            _ => panic!("Invalid direction index {}", i),
         }
     }
 
