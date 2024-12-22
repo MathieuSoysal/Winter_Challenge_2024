@@ -8,6 +8,7 @@ use super::{
 };
 
 const MAX_WIDTH: usize = 26;
+
 const MAX_HEIGHT: usize = 13;
 
 pub struct Grid {
@@ -142,9 +143,30 @@ impl Grid {
     pub fn can_add_organ(&self, coord: Coord, organ: Organ) -> bool {
         let x = coord::x(coord);
         let y = coord::y(coord);
-        (self.is_in_bounds(x, y) && cell::is_empty(self.get_cell(x, y)))
+        (self.is_in_bounds(x, y)
+            && cell::is_empty(self.get_cell(x, y))
+            && !self.is_canceled_by_tentacle(x, y, organ::get_owner(organ)))
             && (OrganType::Root == get_type(organ)
                 || self.contains_an_adjacent_organ(x, y, organ::get_owner(organ)))
+    }
+
+    fn is_canceled_by_tentacle(&self, x: u8, y: u8, owner: u8) -> bool {
+        let initial_coord = coord::new(x, y);
+        (x > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
+            || (self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
+            || (y > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x, y - 1), owner))
+            || (self.is_front_of_tentacle(initial_coord, coord::new(x, y + 1), owner))
+    }
+
+    fn is_front_of_tentacle(&self, initial_coord: Coord, tentacle_coord: Coord, owner: u8) -> bool {
+        let tentacle_cell = self.get_cell_from_coord(tentacle_coord);
+        cell::is_tentacle(tentacle_cell)
+            && cell::is_owned_by(tentacle_cell, 1 - owner)
+            && organ::is_faced_to(
+                cell::get_organ(tentacle_cell).unwrap(),
+                tentacle_coord,
+                initial_coord,
+            )
     }
 
     fn contains_an_adjacent_organ(&self, x: u8, y: u8, owner: u8) -> bool {
@@ -380,6 +402,7 @@ mod tests {
         grid.set_cell(0, 1, cell::new(false, None, Some(tentacle_organ)));
 
         assert_eq!(grid.can_add_organ(coord::new(0, 2), root_organ1), false);
+        assert_eq!(grid.can_add_organ(coord::new(0, 2), root_organ), true);
     }
 
     #[test]

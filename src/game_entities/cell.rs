@@ -74,6 +74,10 @@ pub fn is_organ(cell: Cell) -> bool {
     get_type_cell(cell) == ORGAN
 }
 
+pub fn is_tentacle(cell: Cell) -> bool {
+    is_organ(cell) && organ::is_tentacle(get_organ(cell as u16).unwrap())
+}
+
 pub fn is_owned_by(cell: Cell, owner: u8) -> bool {
     is_organ(cell) && organ::get_owner(get_organ(cell as u16).unwrap() as u8) == owner
 }

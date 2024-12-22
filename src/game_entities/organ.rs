@@ -1,4 +1,4 @@
-use super::{coord::Coord, organ_direction::OrganDirection, organ_type::OrganType, player::Player};
+use super::{coord::Coord, organ_direction::OrganDirection, organ_type::OrganType};
 
 const MASK_PLAYER: u8 = 0b0000_0001;
 const MASK_ORGAN_TYPE: u8 = 0b0001_1110;
@@ -28,8 +28,8 @@ pub fn get_face_coord(organ: Organ, coord: Coord) -> Coord {
     get_direction(organ).move_pos(coord)
 }
 
-pub fn is_faced_to(organ: Organ, coord: Coord) -> bool {
-    get_face_coord(organ, coord) == coord
+pub fn is_faced_to(organ: Organ, organ_coord: Coord, coord: Coord) -> bool {
+    get_face_coord(organ, organ_coord) == coord
 }
 
 pub fn is_nucleus(organ: Organ) -> bool {

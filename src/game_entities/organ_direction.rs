@@ -84,12 +84,14 @@ impl OrganDirection {
     }
 
     pub fn move_pos(&self, pos: coord::Coord) -> coord::Coord {
+        let x = coord::x(pos);
+        let y = coord::y(pos);
         match self {
-            OrganDirection::North => coord::new(coord::x(pos), coord::y(pos) - 1),
-            OrganDirection::West => coord::new(coord::x(pos) - 1, coord::y(pos)),
-            OrganDirection::South => coord::new(coord::x(pos), coord::y(pos) + 1),
-            OrganDirection::East => coord::new(coord::x(pos) + 1, coord::y(pos)),
-            OrganDirection::X => coord::new(coord::x(pos), coord::y(pos)),
+            OrganDirection::North => coord::new(x, y - 1),
+            OrganDirection::West => coord::new(x - 1, y),
+            OrganDirection::South => coord::new(x, y + 1),
+            OrganDirection::East => coord::new(x + 1, y),
+            OrganDirection::X => coord::new(x, y),
         }
     }
 }
