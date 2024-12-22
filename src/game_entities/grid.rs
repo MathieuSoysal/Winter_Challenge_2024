@@ -95,6 +95,50 @@ impl Grid {
 
     //TODO: Add organ check the officielle code to see priority, this should update the connection graph too
 
+    fn get_one_adjacent_organ(&self, coord: Coord, owner: u8) -> Option<Coord> {
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        if x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner) {
+            return Some(coord::new(x - 1, y));
+        }
+        if cell::is_owned_by(self.get_cell(x + 1, y), owner) {
+            return Some(coord::new(x + 1, y));
+        }
+        if y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner) {
+            return Some(coord::new(x, y - 1));
+        }
+        if cell::is_owned_by(self.get_cell(x, y + 1), owner) {
+            return Some(coord::new(x, y + 1));
+        }
+        // color red the print
+        eprintln!(
+            "\x1b[31mNo adjacent organ found for coord x: {:?} y: {:?}\x1b[0m",
+            coord::x(coord),
+            coord::y(coord)
+        );
+        None
+    }
+
+    pub fn add_organ(&mut self, coord: Coord, organ: Organ) {
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        self.set_cell(x, y, cell::new(false, None, Some(organ)));
+
+        if OrganType::Root == get_type(organ) {
+            return;
+        }
+
+        let parent_cell = self
+            .get_one_adjacent_organ(coord, organ::get_owner(organ))
+            .unwrap();
+
+        let connections = self
+            .cell_connections
+            .entry(parent_cell)
+            .or_insert(Vec::new());
+        connections.push(coord);
+    }
+
     pub fn can_add_organ(&self, coord: Coord, organ: Organ) -> bool {
         let x = coord::x(coord);
         let y = coord::y(coord);
@@ -323,5 +367,29 @@ mod tests {
         grid.set_cell(0, 0, cell::new(false, None, Some(default_organ0)));
 
         assert_eq!(grid.can_add_organ(coord::new(3, 3), default_organ1), false);
+    }
+
+    #[test]
+    fn test_add_organ() {
+        let mut grid = Grid::new(3, 3);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+
+        grid.add_organ(coord::new(0, 0), root_organ);
+        grid.add_organ(coord::new(1, 0), default_organ);
+
+        assert_eq!(cell::get_organ(grid.get_cell(1, 0)).unwrap(), default_organ);
+
+        let connections = grid.cell_connections.get(&coord::new(0, 0)).unwrap();
+        assert_eq!(connections.len(), 1);
+
+        grid.add_organ(coord::new(0, 1), default_organ);
+        grid.add_organ(coord::new(1, 1), default_organ);
+
+        let connections = grid.cell_connections.get(&coord::new(1, 1));
+        assert_eq!(connections.is_none(), true);
+
+        let connections = grid.cell_connections.get(&coord::new(0, 0)).unwrap();
+        assert_eq!(connections.len(), 2);
     }
 }

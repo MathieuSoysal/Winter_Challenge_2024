@@ -17,7 +17,7 @@ pub fn new(obstacle: bool, protein: Option<Protein>, organ: Option<Organ>) -> Ce
         (true, _, _) => OBSTACLE,
         (false, None, None) => EMPTY,
         (false, Some(protein), None) => (protein as u16) << 2 | PROTEIN,
-        (false, None, Some(organ)) => (organ << 2) as u16 | ORGAN,
+        (false, None, Some(organ)) => ((organ as u16) << 2) | ORGAN,
         _ => panic!("Invalid cell"),
     }
 }
@@ -34,9 +34,9 @@ pub fn get_protein(cell: Cell) -> Option<Protein> {
     }
 }
 
-pub fn get_organ(cell: Cell) -> Option<u16> {
+pub fn get_organ(cell: Cell) -> Option<Organ> {
     if contains_organ(cell) {
-        Some(cell >> 2)
+        Some((cell >> 2) as u8)
     } else {
         None
     }
