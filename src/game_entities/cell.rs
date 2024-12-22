@@ -1,4 +1,7 @@
-use super::protein::Protein;
+use super::{
+    organ::{self, Organ},
+    protein::Protein,
+};
 
 pub type Cell = u16;
 
@@ -8,15 +11,13 @@ const PROTEIN: Cell = 0b10;
 const ORGAN: Cell = 0b11;
 
 const MASK_TYPE: Cell = 0b11;
-const MASK_PROTEIN: Cell = 0b11111100;
-const MASK_ORGAN: Cell = 0b11111100;
 
-pub fn new(obstacle: bool, protein: Option<Protein>, organ_id: Option<u16>) -> Cell {
-    match (obstacle, protein, organ_id) {
+pub fn new(obstacle: bool, protein: Option<Protein>, organ: Option<Organ>) -> Cell {
+    match (obstacle, protein, organ) {
         (true, _, _) => OBSTACLE,
         (false, None, None) => EMPTY,
         (false, Some(protein), None) => (protein as u16) << 2 | PROTEIN,
-        (false, None, Some(organ_id)) => organ_id << 2 | ORGAN,
+        (false, None, Some(organ)) => (organ << 2) as u16 | ORGAN,
         _ => panic!("Invalid cell"),
     }
 }
@@ -33,7 +34,7 @@ pub fn get_protein(cell: Cell) -> Option<Protein> {
     }
 }
 
-pub fn get_organ_id(cell: Cell) -> Option<u16> {
+pub fn get_organ(cell: Cell) -> Option<u16> {
     if contains_organ(cell) {
         Some(cell >> 2)
     } else {
@@ -59,6 +60,22 @@ pub fn place_organ(cell: &mut Cell, organ_id: u16) {
 
 pub fn is_obstacle(cell: Cell) -> bool {
     get_type_cell(cell) == OBSTACLE
+}
+
+pub fn is_empty(cell: Cell) -> bool {
+    get_type_cell(cell) == EMPTY
+}
+
+pub fn is_protein(cell: Cell) -> bool {
+    get_type_cell(cell) == PROTEIN
+}
+
+pub fn is_organ(cell: Cell) -> bool {
+    get_type_cell(cell) == ORGAN
+}
+
+pub fn is_owned_by(cell: Cell, owner: u8) -> bool {
+    is_organ(cell) && organ::get_owner(get_organ(cell as u16).unwrap() as u8) == owner
 }
 
 pub fn contains_organ(cell: Cell) -> bool {
@@ -104,6 +121,15 @@ mod tests {
         assert_eq!(cell::is_obstacle(cell), true);
         assert_eq!(cell::get_protein(cell), None);
         assert_eq!(cell::contains_organ(cell), false);
+        assert_eq!(cell::contains_protein(cell), false);
+    }
+
+    #[test]
+    fn test_cell_organ() {
+        let cell = cell::new(false, None, Some(1));
+        assert_eq!(cell::is_obstacle(cell), false);
+        assert_eq!(cell::get_protein(cell), None);
+        assert_eq!(cell::contains_organ(cell), true);
         assert_eq!(cell::contains_protein(cell), false);
     }
 }
