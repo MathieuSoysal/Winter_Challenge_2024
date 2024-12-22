@@ -370,6 +370,19 @@ mod tests {
     }
 
     #[test]
+    fn test_can_add_organ_in_front_of_tentacle() {
+        let mut grid = Grid::new(5, 5);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+        let tentacle_organ = organ::new(0, OrganType::Tentacle, OrganDirection::South);
+        let root_organ1 = organ::new(1, OrganType::Root, OrganDirection::South);
+
+        grid.set_cell(0, 0, cell::new(false, None, Some(root_organ)));
+        grid.set_cell(0, 1, cell::new(false, None, Some(tentacle_organ)));
+
+        assert_eq!(grid.can_add_organ(coord::new(0, 2), root_organ1), false);
+    }
+
+    #[test]
     fn test_add_organ() {
         let mut grid = Grid::new(3, 3);
         let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
