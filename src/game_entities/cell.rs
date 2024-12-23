@@ -103,12 +103,6 @@ pub fn clear(cell: &mut Cell) {
     *cell = EMPTY;
 }
 
-// pub fn has_tentacle(&self, owner: &Player, facing: Coord) -> bool {
-//     self.organ.as_ref().map_or(false, |organ| {
-//         organ.get_owner().eq(&owner) && organ.is_tentacle() && organ.is_faced_to(facing)
-//     })
-// }
-
 #[cfg(test)]
 mod tests {
     use crate::game_entities::cell;

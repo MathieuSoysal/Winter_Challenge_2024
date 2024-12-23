@@ -74,6 +74,10 @@ impl Player {
     pub fn get_roots(&self) -> &HashSet<Coord> {
         &self.roots
     }
+
+    pub fn get_score(&self) -> u32 {
+        self.organs.len() as u32
+    }
 }
 
 #[cfg(test)]
