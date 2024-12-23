@@ -3,24 +3,23 @@ use std::collections::HashSet;
 use super::{
     coord::Coord,
     organ::{self, Organ},
-    protain_summary::ProteinSummary,
     protein::Protein,
 };
 
 pub struct Player {
+    id: u8,
     storage: u32,
     organs: HashSet<Coord>, //TODO : is it opti to do that ?
     roots: HashSet<Coord>,
-    protein_summary: ProteinSummary,
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(id: u8) -> Self {
         Player {
+            id,
             storage: 0,
             organs: HashSet::new(),
             roots: HashSet::new(),
-            protein_summary: ProteinSummary::new(),
         }
     }
 
@@ -67,6 +66,10 @@ impl Player {
             Protein::D => (self.storage >> (8 * Protein::D as u32)) & 0xFF,
         }
     }
+
+    pub fn get_id(&self) -> u8 {
+        self.id
+    }
 }
 
 #[cfg(test)]
@@ -77,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_add_organ() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         let coord = coord::new(0, 0);
         let organ = organ::new(
             0,
@@ -91,7 +94,7 @@ mod tests {
 
     #[test]
     fn test_remove_organ() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         let coord = coord::new(0, 0);
         let organ = organ::new(
             0,
@@ -106,7 +109,7 @@ mod tests {
 
     #[test]
     fn test_add_root() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         let coord = coord::new(0, 0);
         player.add_root(coord);
         assert!(player.organs.contains(&coord));
@@ -115,14 +118,14 @@ mod tests {
 
     #[test]
     fn test_add_protein() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         player.add_protein(Protein::A);
         assert_eq!(player.get_nb_protein(Protein::A), 1);
     }
 
     #[test]
     fn test_remove_protein() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         player.add_protein(Protein::A);
         player.remove_protein(Protein::A);
         assert_eq!(player.get_nb_protein(Protein::A), 0);
@@ -130,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_get_nb_protein() {
-        let mut player = Player::new();
+        let mut player = Player::new(0);
         player.add_protein(Protein::A);
         player.add_protein(Protein::A);
         player.add_protein(Protein::B);

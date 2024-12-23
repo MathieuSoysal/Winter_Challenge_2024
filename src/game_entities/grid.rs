@@ -498,10 +498,12 @@ mod tests {
 
         grid.remove_organ(coord::new(1, 1));
 
-        assert_eq!(cell::is_empty(grid.get_cell(0, 0)), true);
+        assert_eq!(cell::is_empty(grid.get_cell(0, 0)), false);
         assert_eq!(cell::is_empty(grid.get_cell(0, 1)), false);
-        assert_eq!(cell::is_empty(grid.get_cell(1, 1)), false);
+        assert_eq!(cell::is_empty(grid.get_cell(1, 1)), true);
         assert_eq!(cell::is_empty(grid.get_cell(1, 0)), false);
+        assert_eq!(cell::is_empty(grid.get_cell(2, 1)), false);
+        assert_eq!(cell::is_empty(grid.get_cell(1, 2)), false);
 
         let connections = grid.cell_connections.get(&coord::new(0, 0));
         assert_eq!(connections.is_none(), true);
