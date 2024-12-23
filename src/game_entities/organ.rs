@@ -3,7 +3,7 @@ use super::{coord::Coord, organ_direction::OrganDirection, organ_type::OrganType
 const MASK_PLAYER: Organ = 0b0000_0001;
 const MASK_ORGAN_TYPE: Organ = 0b0001_1110;
 const MASK_ORGAN_DIRECTION: Organ = 0b1110_0000;
-const MASK_ROOT_ID: Organ = 0xFF00;
+const MASK_ROOT_ID: Organ = 0xFF_FF00;
 
 pub type Organ = u32;
 
