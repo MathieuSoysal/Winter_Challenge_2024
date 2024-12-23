@@ -1,4 +1,5 @@
 use super::{
+    coord::Coord,
     organ::{self, Organ},
     protein::Protein,
 };
@@ -38,7 +39,7 @@ pub fn get_organ(cell: Cell) -> Option<Organ> {
     if contains_organ(cell) {
         Some((cell >> 2) as Organ)
     } else {
-        None
+        panic!("\x1b[31mCell {:?} does not contain an organ\x1b[0m", cell);
     }
 }
 
@@ -75,11 +76,15 @@ pub fn is_organ(cell: Cell) -> bool {
 }
 
 pub fn is_tentacle(cell: Cell) -> bool {
-    is_organ(cell) && organ::is_tentacle(get_organ(cell as u16).unwrap())
+    is_organ(cell) && organ::is_tentacle(get_organ(cell).unwrap())
 }
 
 pub fn is_owned_by(cell: Cell, owner: u8) -> bool {
-    is_organ(cell) && organ::get_owner(get_organ(cell as u16).unwrap() as Organ) == owner
+    is_organ(cell) && organ::get_owner(get_organ(cell).unwrap()) == owner
+}
+
+pub fn is_owned_and_rooted_by(cell: Cell, owner: u8, root_coord: Coord) -> bool {
+    is_owned_by(cell, owner) && organ::get_root_coord(get_organ(cell).unwrap()) == root_coord
 }
 
 pub fn contains_organ(cell: Cell) -> bool {

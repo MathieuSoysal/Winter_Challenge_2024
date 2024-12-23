@@ -94,27 +94,26 @@ impl Grid {
         self.cells[x as usize + self.width as usize * y as usize] = cell;
     }
 
-    fn get_one_adjacent_organ(&self, coord: Coord, owner: u8) -> Option<Coord> {
+    fn get_one_adjacent_organ(&self, coord: Coord, owner: u8, root_coord: Coord) -> Coord {
         let x = coord::x(coord);
         let y = coord::y(coord);
-        if x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner) {
-            return Some(coord::new(x - 1, y));
+        if x > 0 && cell::is_owned_and_rooted_by(self.get_cell(x - 1, y), owner, root_coord) {
+            return coord::new(x - 1, y);
         }
-        if cell::is_owned_by(self.get_cell(x + 1, y), owner) {
-            return Some(coord::new(x + 1, y));
+        if cell::is_owned_and_rooted_by(self.get_cell(x + 1, y), owner, root_coord) {
+            return coord::new(x + 1, y);
         }
-        if y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner) {
-            return Some(coord::new(x, y - 1));
+        if y > 0 && cell::is_owned_and_rooted_by(self.get_cell(x, y - 1), owner, root_coord) {
+            return coord::new(x, y - 1);
         }
-        if cell::is_owned_by(self.get_cell(x, y + 1), owner) {
-            return Some(coord::new(x, y + 1));
+        if cell::is_owned_and_rooted_by(self.get_cell(x, y + 1), owner, root_coord) {
+            return coord::new(x, y + 1);
         }
-        eprintln!(
+        panic!(
             "\x1b[31mNo adjacent organ found for coord x: {:?} y: {:?}\x1b[0m",
             coord::x(coord),
             coord::y(coord)
         );
-        None
     }
 
     pub fn add_organ(&mut self, coord: Coord, organ: Organ) {
@@ -126,9 +125,11 @@ impl Grid {
             return;
         }
 
-        let parent_cell = self
-            .get_one_adjacent_organ(coord, organ::get_owner(organ))
-            .unwrap();
+        let parent_cell = self.get_one_adjacent_organ(
+            coord,
+            organ::get_owner(organ),
+            organ::get_root_coord(organ),
+        );
 
         let connections = self
             .cell_connections
@@ -143,9 +144,11 @@ impl Grid {
         let cell = self.get_cell(x, y);
         if let Some(organ) = cell::get_organ(cell) {
             if OrganType::Root != get_type(organ) {
-                let parent_cell = self
-                    .get_one_adjacent_organ(coord, organ::get_owner(organ))
-                    .unwrap();
+                let parent_cell = self.get_one_adjacent_organ(
+                    coord,
+                    organ::get_owner(organ),
+                    organ::get_root_coord(organ),
+                );
                 let connections = self.cell_connections.get_mut(&parent_cell).unwrap();
                 connections.retain(|&c| c != coord);
             }
@@ -355,7 +358,7 @@ mod tests {
         grid.set_cell(1, 2, cell::new(false, None, None));
         grid.set_cell(2, 2, cell::new(false, None, None));
 
-        let default_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
 
         assert_eq!(grid.can_add_organ(coord::new(0, 0), default_organ), true);
         assert_eq!(grid.can_add_organ(coord::new(1, 0), default_organ), true);
@@ -372,7 +375,7 @@ mod tests {
     fn test_can_add_organ_out_of_bounds() {
         let grid = Grid::new(3, 3);
 
-        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
         assert_eq!(grid.can_add_organ(coord::new(3, 3), default_organ), false);
     }
@@ -383,7 +386,7 @@ mod tests {
 
         grid.set_cell(0, 0, cell::new(true, None, None));
 
-        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
         assert_eq!(grid.can_add_organ(coord::new(0, 0), default_organ), false);
     }
@@ -394,7 +397,7 @@ mod tests {
 
         grid.set_cell(0, 0, cell::new(false, Some(Protein::A), None));
 
-        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
         assert_eq!(grid.can_add_organ(coord::new(1, 0), default_organ), false);
     }
@@ -402,7 +405,7 @@ mod tests {
     #[test]
     fn test_can_add_organ_with_adjacent_organ() {
         let mut grid = Grid::new(3, 3);
-        let default_organ = organ::new(1, OrganType::Basic, OrganDirection::North);
+        let default_organ = organ::new(1, OrganType::Basic, OrganDirection::North, 0);
 
         grid.set_cell(0, 0, cell::new(false, None, Some(default_organ)));
 
@@ -412,8 +415,8 @@ mod tests {
     #[test]
     fn test_can_add_organ_with_adjacent_not_owned_organ() {
         let mut grid = Grid::new(3, 3);
-        let default_organ0 = organ::new(0, OrganType::Basic, OrganDirection::North);
-        let default_organ1 = organ::new(1, OrganType::Basic, OrganDirection::North);
+        let default_organ0 = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
+        let default_organ1 = organ::new(1, OrganType::Basic, OrganDirection::North, 0);
 
         grid.set_cell(0, 0, cell::new(false, None, Some(default_organ0)));
 
@@ -423,9 +426,9 @@ mod tests {
     #[test]
     fn test_can_add_organ_in_front_of_tentacle() {
         let mut grid = Grid::new(5, 5);
-        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
-        let tentacle_organ = organ::new(0, OrganType::Tentacle, OrganDirection::South);
-        let root_organ1 = organ::new(1, OrganType::Root, OrganDirection::South);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
+        let tentacle_organ = organ::new(0, OrganType::Tentacle, OrganDirection::South, 0);
+        let root_organ1 = organ::new(1, OrganType::Root, OrganDirection::South, 0);
 
         grid.set_cell(0, 0, cell::new(false, None, Some(root_organ)));
         grid.set_cell(0, 1, cell::new(false, None, Some(tentacle_organ)));
@@ -437,8 +440,8 @@ mod tests {
     #[test]
     fn test_add_organ() {
         let mut grid = Grid::new(3, 3);
-        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
-        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
 
         grid.add_organ(coord::new(0, 0), root_organ);
         grid.add_organ(coord::new(1, 0), default_organ);
@@ -461,8 +464,8 @@ mod tests {
     #[test]
     pub fn test_remove_organ() {
         let mut grid = Grid::new(3, 3);
-        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
-        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
 
         grid.add_organ(coord::new(0, 0), root_organ);
         grid.add_organ(coord::new(1, 0), default_organ);
@@ -487,7 +490,7 @@ mod tests {
     #[test]
     pub fn test_remove_organ_no_child() {
         let mut grid = Grid::new(8, 8);
-        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
 
         grid.add_organ(coord::new(0, 0), root_organ);
         grid.add_organ(coord::new(1, 0), root_organ);

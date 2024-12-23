@@ -74,8 +74,6 @@ impl Player {
     pub fn get_roots(&self) -> &HashSet<Coord> {
         &self.roots
     }
-
-    
 }
 
 #[cfg(test)]
@@ -92,6 +90,7 @@ mod tests {
             0,
             organ_type::OrganType::Root,
             organ_direction::OrganDirection::North,
+            0,
         );
         player.add_organ(coord, organ);
         assert!(player.organs.contains(&coord));
@@ -106,6 +105,7 @@ mod tests {
             0,
             organ_type::OrganType::Root,
             organ_direction::OrganDirection::North,
+            0,
         );
         player.add_organ(coord, organ);
         player.remove_organ(coord);

@@ -7,10 +7,16 @@ const MASK_ROOT_ID: Organ = 0xFF_FF00;
 
 pub type Organ = u32;
 
-pub fn new(owner: u8, organ_type: OrganType, organ_direction: OrganDirection) -> Organ {
+pub fn new(
+    owner: u8,
+    organ_type: OrganType,
+    organ_direction: OrganDirection,
+    root_coord: Coord,
+) -> Organ {
     (owner as Organ & MASK_PLAYER)
         | ((organ_type as Organ) << 1 & MASK_ORGAN_TYPE)
         | ((organ_direction as Organ) << 5 & MASK_ORGAN_DIRECTION)
+        | ((root_coord as Organ) << 8 & MASK_ROOT_ID)
 }
 
 pub fn add_root_coord(organ: Organ, root_coord: Coord) -> Organ {
@@ -69,7 +75,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         assert_eq!(get_owner(organ), 0);
         assert_eq!(get_type(organ), OrganType::Root);
         assert_eq!(get_direction(organ), OrganDirection::North);
@@ -77,7 +83,7 @@ mod tests {
 
     #[test]
     fn test_add_root_coord() {
-        let organ = new(1, OrganType::Tentacle, OrganDirection::East);
+        let organ = new(1, OrganType::Tentacle, OrganDirection::East, 0);
         let organ = add_root_coord(organ, 0xFFFF);
         assert_eq!(get_owner(organ), 1);
         assert_eq!(get_type(organ), OrganType::Tentacle);
@@ -87,25 +93,25 @@ mod tests {
 
     #[test]
     fn test_get_owner() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         assert_eq!(get_owner(organ), 0);
     }
 
     #[test]
     fn test_get_direction() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         assert_eq!(get_direction(organ), OrganDirection::North);
     }
 
     #[test]
     fn test_get_type() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         assert_eq!(get_type(organ), OrganType::Root);
     }
 
     #[test]
     fn test_is_faced_to() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         let organ_coord = coord::new(0, 1);
         let coord = coord::new(0, 0);
         assert!(is_faced_to(organ, organ_coord, coord));
@@ -113,13 +119,13 @@ mod tests {
 
     #[test]
     fn test_is_root() {
-        let organ = new(0, OrganType::Root, OrganDirection::North);
+        let organ = new(0, OrganType::Root, OrganDirection::North, 0);
         assert!(is_root(organ));
     }
 
     #[test]
     fn test_is_harvester() {
-        let organ = new(0, OrganType::Harvester, OrganDirection::North);
+        let organ = new(0, OrganType::Harvester, OrganDirection::North, 0);
         assert!(is_harvester(organ));
     }
 }
