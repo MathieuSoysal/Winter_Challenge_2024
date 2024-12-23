@@ -58,6 +58,15 @@ impl Player {
             Protein::D => self.storage -= 1 << (8 * Protein::D as u32),
         }
     }
+
+    pub fn get_nb_protein(&self, protein: Protein) -> u32 {
+        match protein {
+            Protein::A => (self.storage >> (8 * Protein::A as u32)) & 0xFF,
+            Protein::B => (self.storage >> (8 * Protein::B as u32)) & 0xFF,
+            Protein::C => (self.storage >> (8 * Protein::C as u32)) & 0xFF,
+            Protein::D => (self.storage >> (8 * Protein::D as u32)) & 0xFF,
+        }
+    }
 }
 
 #[cfg(test)]
@@ -93,5 +102,41 @@ mod tests {
         player.remove_organ(coord);
         assert!(!player.organs.contains(&coord));
         assert!(!player.roots.contains(&coord));
+    }
+
+    #[test]
+    fn test_add_root() {
+        let mut player = Player::new();
+        let coord = coord::new(0, 0);
+        player.add_root(coord);
+        assert!(player.organs.contains(&coord));
+        assert!(player.roots.contains(&coord));
+    }
+
+    #[test]
+    fn test_add_protein() {
+        let mut player = Player::new();
+        player.add_protein(Protein::A);
+        assert_eq!(player.get_nb_protein(Protein::A), 1);
+    }
+
+    #[test]
+    fn test_remove_protein() {
+        let mut player = Player::new();
+        player.add_protein(Protein::A);
+        player.remove_protein(Protein::A);
+        assert_eq!(player.get_nb_protein(Protein::A), 0);
+    }
+
+    #[test]
+    fn test_get_nb_protein() {
+        let mut player = Player::new();
+        player.add_protein(Protein::A);
+        player.add_protein(Protein::A);
+        player.add_protein(Protein::B);
+        assert_eq!(player.get_nb_protein(Protein::A), 2);
+        assert_eq!(player.get_nb_protein(Protein::B), 1);
+        assert_eq!(player.get_nb_protein(Protein::C), 0);
+        assert_eq!(player.get_nb_protein(Protein::D), 0);
     }
 }
