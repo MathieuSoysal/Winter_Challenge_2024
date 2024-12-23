@@ -1,4 +1,5 @@
 use std::io;
+pub mod actions;
 pub mod game_entities;
 
 macro_rules! parse_input {
