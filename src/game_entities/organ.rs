@@ -32,7 +32,7 @@ pub fn is_faced_to(organ: Organ, organ_coord: Coord, coord: Coord) -> bool {
     get_face_coord(organ, organ_coord) == coord
 }
 
-pub fn is_nucleus(organ: Organ) -> bool {
+pub fn is_root(organ: Organ) -> bool {
     get_type(organ) == OrganType::Root
 }
 
