@@ -1,15 +1,27 @@
 pub type Coord = u16;
 
+const BITS_Y: Coord = 4;
+const MASK_Y: Coord = 0b1111;
+const MASK_X: Coord = 0b1_1111;
+
+pub const MASK_COORD: Coord = 0b0000_0001_1111_1111;
+
+const MAX_X: u8 = 26;
+const MAX_Y: u8 = 13;
+
 pub fn new(x: u8, y: u8) -> Coord {
-    (x as u16) << 8 | y as u16
+    if x > MAX_X || y > MAX_Y {
+        panic!("\x1b[31mInvalid coordinates ({}, {})\x1b[0m", x, y);
+    }
+    ((x as Coord) << BITS_Y) | y as Coord
 }
 
 pub fn x(coord: Coord) -> u8 {
-    (coord >> 8) as u8
+    ((coord >> BITS_Y) & MASK_X) as u8
 }
 
 pub fn y(coord: Coord) -> u8 {
-    (coord & 0xff) as u8
+    (coord & MASK_Y) as u8
 }
 
 pub fn manhattan_distance(coord1: Coord, coord2: Coord) -> u8 {
@@ -25,10 +37,22 @@ mod tests {
     use super::*;
 
     #[test]
+    #[should_panic]
+    fn test_coord_new_invalid_x() {
+        new(27, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_coord_new_invalid_y() {
+        new(0, 14);
+    }
+
+    #[test]
     fn test_pos_new() {
-        let pos = new(1, 2);
-        assert_eq!(x(pos), 1);
-        assert_eq!(y(pos), 2);
+        let pos = new(26, 13);
+        assert_eq!(x(pos), 26);
+        assert_eq!(y(pos), 13);
     }
 
     #[test]
