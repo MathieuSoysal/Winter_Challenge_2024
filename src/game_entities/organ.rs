@@ -1,19 +1,19 @@
 use super::{coord::Coord, organ_direction::OrganDirection, organ_type::OrganType};
 
-const MASK_PLAYER: u8 = 0b0000_0001;
-const MASK_ORGAN_TYPE: u8 = 0b0001_1110;
-const MASK_ORGAN_DIRECTION: u8 = 0b1110_0000;
+const MASK_PLAYER: u16 = 0b0000_0001;
+const MASK_ORGAN_TYPE: u16 = 0b0001_1110;
+const MASK_ORGAN_DIRECTION: u16 = 0b1110_0000;
 
-pub type Organ = u8;
+pub type Organ = u16;
 
 pub fn new(owner: u8, organ_type: OrganType, organ_direction: OrganDirection) -> Organ {
-    (owner & MASK_PLAYER)
-        | ((organ_type as u8) << 1 & MASK_ORGAN_TYPE)
-        | ((organ_direction as u8) << 5 & MASK_ORGAN_DIRECTION)
+    (owner as u16 & MASK_PLAYER)
+        | ((organ_type as u16) << 1 & MASK_ORGAN_TYPE)
+        | ((organ_direction as u16) << 5 & MASK_ORGAN_DIRECTION)
 }
 
 pub fn get_owner(organ: Organ) -> u8 {
-    organ & MASK_PLAYER
+    (organ & MASK_PLAYER) as u8
 }
 
 pub fn get_direction(organ: Organ) -> OrganDirection {

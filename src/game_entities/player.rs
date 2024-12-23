@@ -70,6 +70,12 @@ impl Player {
     pub fn get_id(&self) -> u8 {
         self.id
     }
+
+    pub fn get_roots(&self) -> &HashSet<Coord> {
+        &self.roots
+    }
+
+    
 }
 
 #[cfg(test)]

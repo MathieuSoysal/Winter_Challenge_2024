@@ -36,7 +36,7 @@ pub fn get_protein(cell: Cell) -> Option<Protein> {
 
 pub fn get_organ(cell: Cell) -> Option<Organ> {
     if contains_organ(cell) {
-        Some((cell >> 2) as u8)
+        Some((cell >> 2) as Organ)
     } else {
         None
     }
@@ -79,7 +79,7 @@ pub fn is_tentacle(cell: Cell) -> bool {
 }
 
 pub fn is_owned_by(cell: Cell, owner: u8) -> bool {
-    is_organ(cell) && organ::get_owner(get_organ(cell as u16).unwrap() as u8) == owner
+    is_organ(cell) && organ::get_owner(get_organ(cell as u16).unwrap() as Organ) == owner
 }
 
 pub fn contains_organ(cell: Cell) -> bool {
