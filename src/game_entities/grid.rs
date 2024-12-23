@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use super::{
     cell::{self, Cell},
@@ -13,7 +13,7 @@ const MAX_HEIGHT: usize = 13;
 
 pub struct Grid {
     cells: [Cell; MAX_WIDTH * MAX_HEIGHT],
-    cell_connections: HashMap<coord::Coord, Vec<coord::Coord>>,
+    cell_connections: HashMap<coord::Coord, HashSet<coord::Coord>>,
     width: u8,
     height: u8,
 }
@@ -94,8 +94,6 @@ impl Grid {
         self.cells[x as usize + self.width as usize * y as usize] = cell;
     }
 
-    //TODO: Add organ check the officielle code to see priority, this should update the connection graph too
-
     fn get_one_adjacent_organ(&self, coord: Coord, owner: u8) -> Option<Coord> {
         let x = coord::x(coord);
         let y = coord::y(coord);
@@ -111,7 +109,6 @@ impl Grid {
         if cell::is_owned_by(self.get_cell(x, y + 1), owner) {
             return Some(coord::new(x, y + 1));
         }
-        // color red the print
         eprintln!(
             "\x1b[31mNo adjacent organ found for coord x: {:?} y: {:?}\x1b[0m",
             coord::x(coord),
@@ -136,8 +133,40 @@ impl Grid {
         let connections = self
             .cell_connections
             .entry(parent_cell)
-            .or_insert(Vec::new());
-        connections.push(coord);
+            .or_insert(HashSet::new());
+        connections.insert(coord);
+    }
+
+    pub fn remove_organ(&mut self, coord: Coord) {
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        let cell = self.get_cell(x, y);
+        if let Some(organ) = cell::get_organ(cell) {
+            if OrganType::Root != get_type(organ) {
+                let parent_cell = self
+                    .get_one_adjacent_organ(coord, organ::get_owner(organ))
+                    .unwrap();
+                let connections = self.cell_connections.get_mut(&parent_cell).unwrap();
+                connections.retain(|&c| c != coord);
+            }
+        }
+        self.remove_children(coord);
+    }
+
+    fn remove_children(&mut self, coord: Coord) {
+        if !cell::is_organ(self.get_cell_from_coord(coord)) {
+            panic!("\x1b[31Cell is not an organ\x1b[0m");
+        }
+        self.set_cell(
+            coord::x(coord),
+            coord::y(coord),
+            cell::new(false, None, None),
+        );
+        if let Some(children) = self.cell_connections.remove(&coord) {
+            children.iter().for_each(|child_coord| {
+                self.remove_children(*child_coord);
+            });
+        }
     }
 
     pub fn can_add_organ(&self, coord: Coord, organ: Organ) -> bool {
@@ -427,5 +456,54 @@ mod tests {
 
         let connections = grid.cell_connections.get(&coord::new(0, 0)).unwrap();
         assert_eq!(connections.len(), 2);
+    }
+
+    #[test]
+    pub fn test_remove_organ() {
+        let mut grid = Grid::new(3, 3);
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+
+        grid.add_organ(coord::new(0, 0), root_organ);
+        grid.add_organ(coord::new(1, 0), default_organ);
+        grid.add_organ(coord::new(0, 1), default_organ);
+        grid.add_organ(coord::new(1, 1), default_organ);
+
+        grid.remove_organ(coord::new(1, 0));
+
+        assert_eq!(cell::is_empty(grid.get_cell(1, 0)), true);
+
+        let connections = grid.cell_connections.get(&coord::new(0, 0)).unwrap();
+        assert_eq!(connections.len(), 1);
+
+        grid.remove_organ(coord::new(0, 0));
+
+        assert_eq!(grid.cells.iter().all(|&cell| cell::is_empty(cell)), true);
+
+        let connections = grid.cell_connections.get(&coord::new(0, 0));
+        assert_eq!(connections.is_none(), true);
+    }
+
+    #[test]
+    pub fn test_remove_organ_no_child() {
+        let mut grid = Grid::new(8, 8);
+        let root_organ = organ::new(0, OrganType::Root, OrganDirection::North);
+
+        grid.add_organ(coord::new(0, 0), root_organ);
+        grid.add_organ(coord::new(1, 0), root_organ);
+        grid.add_organ(coord::new(0, 1), root_organ);
+        grid.add_organ(coord::new(1, 1), root_organ);
+        grid.add_organ(coord::new(1, 2), root_organ);
+        grid.add_organ(coord::new(2, 1), root_organ);
+
+        grid.remove_organ(coord::new(1, 1));
+
+        assert_eq!(cell::is_empty(grid.get_cell(0, 0)), true);
+        assert_eq!(cell::is_empty(grid.get_cell(0, 1)), false);
+        assert_eq!(cell::is_empty(grid.get_cell(1, 1)), false);
+        assert_eq!(cell::is_empty(grid.get_cell(1, 0)), false);
+
+        let connections = grid.cell_connections.get(&coord::new(0, 0));
+        assert_eq!(connections.is_none(), true);
     }
 }
