@@ -1,6 +1,6 @@
 use crate::game_entities::{
     coord::Coord, grid::Grid, organ, organ_direction::OrganDirection, organ_type::OrganType,
-    player::Player, protein::Protein, protein_wallet,
+    player::Player, protein_wallet,
 };
 
 use super::action_type::{self, ActionType};
@@ -74,6 +74,7 @@ mod tests {
     use super::*;
     use crate::game_entities::organ_direction::OrganDirection;
     use crate::game_entities::organ_type::OrganType;
+    use crate::game_entities::protein::Protein;
     use crate::game_entities::{cell, coord};
 
     #[test]
@@ -115,7 +116,7 @@ mod tests {
         player.add_protein(Protein::B, 1);
         player.add_protein(Protein::C, 1);
         player.add_protein(Protein::D, 1);
-        let mut grid = Grid::new(10, 10);
+        let grid = Grid::new(10, 10);
         let action = new(
             ActionType::Growth,
             OrganType::Root,
