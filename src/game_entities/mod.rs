@@ -1,3 +1,4 @@
+pub mod protein_wallet;
 pub mod cell;
 pub mod coord;
 pub mod grid;

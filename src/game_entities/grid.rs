@@ -172,9 +172,9 @@ impl Grid {
         }
     }
 
-    pub fn can_add_organ(&self, coord: Coord, organ: Organ) -> bool {
-        let x = coord::x(coord);
-        let y = coord::y(coord);
+    pub fn can_add_organ(&self, dest: Coord, organ: Organ) -> bool {
+        let x = coord::x(dest);
+        let y = coord::y(dest);
         (self.is_in_bounds(x, y)
             && cell::is_empty(self.get_cell(x, y))
             && !self.is_canceled_by_tentacle(x, y, organ::get_owner(organ)))

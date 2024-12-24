@@ -1,3 +1,5 @@
+use super::protein_wallet::ProteinWallet;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganType {
     Root = 0b0001,
@@ -40,13 +42,13 @@ impl OrganType {
         }
     }
 
-    pub fn get_cost(&self) -> u32 {
+    pub fn get_cost(&self) -> ProteinWallet {
         match self {
-            OrganType::Root => 0b1111,
-            OrganType::Basic => 0b1000,
-            OrganType::Harvester => 0b0110,
-            OrganType::Sporer => 0b0011,
-            OrganType::Tentacle => 0b0101,
+            OrganType::Root => 0x01_01_01_01,
+            OrganType::Basic => 0x01_00_00_00,
+            OrganType::Harvester => 0x00_01_01_00,
+            OrganType::Sporer => 0x00_00_01_01,
+            OrganType::Tentacle => 0x00_01_00_01,
         }
     }
 

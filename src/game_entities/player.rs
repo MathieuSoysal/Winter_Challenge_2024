@@ -4,11 +4,12 @@ use super::{
     coord::Coord,
     organ::{self, Organ},
     protein::Protein,
+    protein_wallet::{self, ProteinWallet},
 };
 
 pub struct Player {
     id: u8,
-    storage: u32,
+    wallet: ProteinWallet,
     organs: HashSet<Coord>, //TODO : is it opti to do that ?
     roots: HashSet<Coord>,
 }
@@ -17,7 +18,7 @@ impl Player {
     pub fn new(id: u8) -> Self {
         Player {
             id,
-            storage: 0,
+            wallet: 0,
             organs: HashSet::new(),
             roots: HashSet::new(),
         }
@@ -40,30 +41,20 @@ impl Player {
         self.organs.insert(coord);
     }
 
-    pub fn add_protein(&mut self, protein: Protein) {
-        match protein {
-            Protein::A => self.storage += 1 << (8 * Protein::A as u32),
-            Protein::B => self.storage += 1 << (8 * Protein::B as u32),
-            Protein::C => self.storage += 1 << (8 * Protein::C as u32),
-            Protein::D => self.storage += 1 << (8 * Protein::D as u32),
-        }
+    pub fn add_protein(&mut self, protein: Protein, amount: u32) {
+        protein_wallet::add(&mut self.wallet, protein, amount);
     }
 
-    pub fn remove_protein(&mut self, protein: Protein) {
-        match protein {
-            Protein::A => self.storage -= 1 << (8 * Protein::A as u32),
-            Protein::B => self.storage -= 1 << (8 * Protein::B as u32),
-            Protein::C => self.storage -= 1 << (8 * Protein::C as u32),
-            Protein::D => self.storage -= 1 << (8 * Protein::D as u32),
-        }
+    pub fn remove_protein(&mut self, protein: Protein, amount: u32) {
+        protein_wallet::remove(&mut self.wallet, protein, amount);
     }
 
     pub fn get_nb_protein(&self, protein: Protein) -> u32 {
         match protein {
-            Protein::A => (self.storage >> (8 * Protein::A as u32)) & 0xFF,
-            Protein::B => (self.storage >> (8 * Protein::B as u32)) & 0xFF,
-            Protein::C => (self.storage >> (8 * Protein::C as u32)) & 0xFF,
-            Protein::D => (self.storage >> (8 * Protein::D as u32)) & 0xFF,
+            Protein::A => (self.wallet >> (8 * Protein::A as u32)) & 0xFF,
+            Protein::B => (self.wallet >> (8 * Protein::B as u32)) & 0xFF,
+            Protein::C => (self.wallet >> (8 * Protein::C as u32)) & 0xFF,
+            Protein::D => (self.wallet >> (8 * Protein::D as u32)) & 0xFF,
         }
     }
 
@@ -77,6 +68,10 @@ impl Player {
 
     pub fn get_score(&self) -> u32 {
         self.organs.len() as u32
+    }
+
+    pub fn get_wallet(&self) -> ProteinWallet {
+        self.wallet
     }
 }
 
@@ -129,24 +124,24 @@ mod tests {
     #[test]
     fn test_add_protein() {
         let mut player = Player::new(0);
-        player.add_protein(Protein::A);
+        player.add_protein(Protein::A, 1);
         assert_eq!(player.get_nb_protein(Protein::A), 1);
     }
 
     #[test]
     fn test_remove_protein() {
         let mut player = Player::new(0);
-        player.add_protein(Protein::A);
-        player.remove_protein(Protein::A);
+        player.add_protein(Protein::A, 1);
+        player.remove_protein(Protein::A, 1);
         assert_eq!(player.get_nb_protein(Protein::A), 0);
     }
 
     #[test]
     fn test_get_nb_protein() {
         let mut player = Player::new(0);
-        player.add_protein(Protein::A);
-        player.add_protein(Protein::A);
-        player.add_protein(Protein::B);
+        player.add_protein(Protein::A, 1);
+        player.add_protein(Protein::A, 1);
+        player.add_protein(Protein::B, 1);
         assert_eq!(player.get_nb_protein(Protein::A), 2);
         assert_eq!(player.get_nb_protein(Protein::B), 1);
         assert_eq!(player.get_nb_protein(Protein::C), 0);
