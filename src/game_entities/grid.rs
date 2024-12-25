@@ -7,9 +7,9 @@ use super::{
     organ_type::OrganType,
 };
 
-const MAX_WIDTH: usize = 26;
+pub const MAX_WIDTH: usize = 24;
 
-const MAX_HEIGHT: usize = 13;
+pub const MAX_HEIGHT: usize = 12;
 
 pub struct Grid {
     cells: [Cell; MAX_WIDTH * MAX_HEIGHT],
