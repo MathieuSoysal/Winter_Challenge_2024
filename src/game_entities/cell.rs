@@ -87,6 +87,12 @@ pub fn is_owned_and_rooted_by(cell: Cell, owner: u8, root_coord: Coord) -> bool 
     is_owned_by(cell, owner) && organ::get_root_coord(get_organ(cell).unwrap()) == root_coord
 }
 
+pub fn has_root_coord(cell1: Cell, root_coord: Coord) -> bool {
+    is_organ(cell1)
+        && organ::get_root_coord(get_organ(cell1).unwrap())
+            == root_coord
+}
+
 pub fn contains_organ(cell: Cell) -> bool {
     get_type_cell(cell) == ORGAN
 }

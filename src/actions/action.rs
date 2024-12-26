@@ -48,6 +48,57 @@ pub fn get_coord_source(action: Action) -> Coord {
     ((action & MASK_COORD_ROOT) >> 16) as Coord
 }
 
+pub fn set_coord_target(action: Action, coord: Coord) -> Action {
+    (action & !MASK_COORD_TARGET) | ((coord as Action) << 7)
+}
+
+pub fn set_coord_source(action: Action, coord: Coord) -> Action {
+    (action & !MASK_COORD_ROOT) | ((coord as Action) << 16)
+}
+
+pub fn set_direction(action: Action, direction: OrganDirection) -> Action {
+    (action & !MASK_DIRECTION) | ((direction as Action) << 5)
+}
+
+pub fn set_organ_type(action: Action, organ_type: OrganType) -> Action {
+    (action & !MASK_ORGAN) | ((organ_type as Action) << 2)
+}
+
+pub fn wait() -> Action {
+    new(
+        ActionType::Wait,
+        OrganType::Root,
+        OrganDirection::North,
+        0,
+        0,
+    )
+}
+
+pub fn growth(
+    organ_type: OrganType,
+    direction: OrganDirection,
+    coord_target: Coord,
+    coord_root: Coord,
+) -> Action {
+    new(
+        ActionType::Growth,
+        organ_type,
+        direction,
+        coord_target,
+        coord_root,
+    )
+}
+
+pub fn sporer(direction: OrganDirection, coord_target: Coord, coord_root: Coord) -> Action {
+    new(
+        ActionType::Sporer,
+        OrganType::Root,
+        direction,
+        coord_target,
+        coord_root,
+    )
+}
+
 pub fn is_valid(action: Action, grid: &Grid, player: &Player) -> bool {
     let action_type = get_type(action);
     let coord_target = get_coord_target(action);
@@ -62,7 +113,7 @@ pub fn is_valid(action: Action, grid: &Grid, player: &Player) -> bool {
         OrganType::Root
     };
     protein_wallet::can_buy_organ(player.get_wallet(), organ_type)
-        && grid.can_add_organ(
+        && grid.can_add_organ_without_root_coord(
             coord_target,
             organ::new(player.get_id(), organ_type, direction, coord_root),
         )

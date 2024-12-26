@@ -14,8 +14,8 @@ pub const MAX_HEIGHT: usize = 12;
 pub struct Grid {
     cells: [Cell; MAX_WIDTH * MAX_HEIGHT],
     cell_connections: HashMap<coord::Coord, HashSet<coord::Coord>>,
-    width: u8,
-    height: u8,
+    pub width: u8,
+    pub height: u8,
 }
 
 impl Grid {
@@ -172,7 +172,7 @@ impl Grid {
         }
     }
 
-    pub fn can_add_organ(&self, dest: Coord, organ: Organ) -> bool {
+    pub fn can_add_organ_without_root_coord(&self, dest: Coord, organ: Organ) -> bool {
         let x = coord::x(dest);
         let y = coord::y(dest);
         (self.is_in_bounds(x, y)
@@ -182,12 +182,28 @@ impl Grid {
                 || self.contains_an_adjacent_organ(x, y, organ::get_owner(organ)))
     }
 
+    pub fn can_add_organ_with_root_coord(&self, dest: Coord, organ: Organ) -> bool {
+        let x = coord::x(dest);
+        let y = coord::y(dest);
+        (self.is_in_bounds(x, y)
+            && cell::is_empty(self.get_cell(x, y))
+            && !self.is_canceled_by_tentacle(x, y, organ::get_owner(organ)))
+            && (OrganType::Root == get_type(organ)
+                || self.contains_an_adjacent_organ_with_same_root(
+                    x,
+                    y,
+                    organ::get_root_coord(organ),
+                ))
+    }
+
     fn is_canceled_by_tentacle(&self, x: u8, y: u8, owner: u8) -> bool {
         let initial_coord = coord::new(x, y);
-        (x > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
-            || (self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
+        (x > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x - 1, y), owner))
+            || (x < self.width - 1
+                && self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
             || (y > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x, y - 1), owner))
-            || (self.is_front_of_tentacle(initial_coord, coord::new(x, y + 1), owner))
+            || (y < self.height - 1
+                && self.is_front_of_tentacle(initial_coord, coord::new(x, y + 1), owner))
     }
 
     fn is_front_of_tentacle(&self, initial_coord: Coord, tentacle_coord: Coord, owner: u8) -> bool {
@@ -206,6 +222,13 @@ impl Grid {
             || cell::is_owned_by(self.get_cell(x + 1, y), owner)
             || (y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner))
             || cell::is_owned_by(self.get_cell(x, y + 1), owner)
+    }
+
+    fn contains_an_adjacent_organ_with_same_root(&self, x: u8, y: u8, root_coord: Coord) -> bool {
+        (x > 0 && cell::has_root_coord(self.get_cell(x - 1, y), root_coord))
+            || (x < self.width - 1 && cell::has_root_coord(self.get_cell(x + 1, y), root_coord))
+            || (y > 0 && cell::has_root_coord(self.get_cell(x, y - 1), root_coord))
+            || (y < self.height - 1 && cell::has_root_coord(self.get_cell(x, y + 1), root_coord))
     }
 }
 
@@ -360,15 +383,42 @@ mod tests {
 
         let default_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
 
-        assert_eq!(grid.can_add_organ(coord::new(0, 0), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(1, 0), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(2, 0), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(0, 1), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(1, 1), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(2, 1), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(0, 2), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(1, 2), default_organ), true);
-        assert_eq!(grid.can_add_organ(coord::new(2, 2), default_organ), true);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 0), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(1, 0), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 0), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 1), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(1, 1), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 1), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 2), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(1, 2), default_organ),
+            true
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
+            true
+        );
     }
 
     #[test]
@@ -377,7 +427,22 @@ mod tests {
 
         let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
-        assert_eq!(grid.can_add_organ(coord::new(3, 3), default_organ), false);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(3, 3), default_organ),
+            false
+        );
+    }
+
+    #[test]
+    fn test_can_add_organ_in_edge() {
+        let grid = Grid::new(3, 3);
+
+        let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
+
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
+            true
+        );
     }
 
     #[test]
@@ -388,7 +453,10 @@ mod tests {
 
         let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
-        assert_eq!(grid.can_add_organ(coord::new(0, 0), default_organ), false);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 0), default_organ),
+            false
+        );
     }
 
     #[test]
@@ -399,7 +467,10 @@ mod tests {
 
         let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
 
-        assert_eq!(grid.can_add_organ(coord::new(1, 0), default_organ), false);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(1, 0), default_organ),
+            false
+        );
     }
 
     #[test]
@@ -409,7 +480,10 @@ mod tests {
 
         grid.set_cell(0, 0, cell::new(false, None, Some(default_organ)));
 
-        assert_eq!(grid.can_add_organ(coord::new(1, 0), default_organ), true);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(1, 0), default_organ),
+            true
+        );
     }
 
     #[test]
@@ -420,7 +494,10 @@ mod tests {
 
         grid.set_cell(0, 0, cell::new(false, None, Some(default_organ0)));
 
-        assert_eq!(grid.can_add_organ(coord::new(3, 3), default_organ1), false);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(3, 3), default_organ1),
+            false
+        );
     }
 
     #[test]
@@ -433,8 +510,14 @@ mod tests {
         grid.set_cell(0, 0, cell::new(false, None, Some(root_organ)));
         grid.set_cell(0, 1, cell::new(false, None, Some(tentacle_organ)));
 
-        assert_eq!(grid.can_add_organ(coord::new(0, 2), root_organ1), false);
-        assert_eq!(grid.can_add_organ(coord::new(0, 2), root_organ), true);
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 2), root_organ1),
+            false
+        );
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(0, 2), root_organ),
+            true
+        );
     }
 
     #[test]

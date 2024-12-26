@@ -2,11 +2,11 @@ use super::protein_wallet::ProteinWallet;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganType {
-    Root = 0b0001,
-    Basic = 0b0010,
-    Harvester = 0b0011,
-    Sporer = 0b0100,
-    Tentacle = 0b0101,
+    Basic = 0b0000,
+    Harvester = 0b0001,
+    Sporer = 0b0010,
+    Tentacle = 0b0011,
+    Root = 0b0100,
 }
 
 impl OrganType {
@@ -23,11 +23,11 @@ impl OrganType {
 
     pub fn from_index(i: usize) -> OrganType {
         match i {
-            0b0001 => OrganType::Root,
-            0b0010 => OrganType::Basic,
-            0b0011 => OrganType::Harvester,
-            0b0100 => OrganType::Sporer,
-            0b0101 => OrganType::Tentacle,
+            0b0000 => OrganType::Basic,
+            0b0001 => OrganType::Harvester,
+            0b0010 => OrganType::Sporer,
+            0b0011 => OrganType::Tentacle,
+            0b0100 => OrganType::Root,
             _ => panic!("Invalid organ type index {}", i),
         }
     }
