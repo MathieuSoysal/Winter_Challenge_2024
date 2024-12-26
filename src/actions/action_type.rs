@@ -5,12 +5,6 @@ pub enum ActionType {
     Sporer = 0b10,
 }
 
-// trait Action {
-// fn get_type(&self) -> ActionType;
-// fn get_cost(&self) -> u32;
-// fn get_index(&self) -> u8;
-// }
-
 impl ActionType {
     pub fn from_str(s: &str) -> ActionType {
         match s {

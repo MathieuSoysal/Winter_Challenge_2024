@@ -198,15 +198,21 @@ impl Grid {
 
     fn is_canceled_by_tentacle(&self, x: u8, y: u8, owner: u8) -> bool {
         let initial_coord = coord::new(x, y);
-        (x > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x - 1, y), owner))
-            || (x < self.width - 1
-                && self.is_front_of_tentacle(initial_coord, coord::new(x + 1, y), owner))
-            || (y > 0 && self.is_front_of_tentacle(initial_coord, coord::new(x, y - 1), owner))
-            || (y < self.height - 1
-                && self.is_front_of_tentacle(initial_coord, coord::new(x, y + 1), owner))
+        (x > 0 && self.is_front_of_enemy_tentacle(initial_coord, coord::new(x - 1, y), owner))
+            || ((x < self.width - 1)
+                && self.is_front_of_enemy_tentacle(initial_coord, coord::new(x + 1, y), owner))
+            || (y > 0
+                && self.is_front_of_enemy_tentacle(initial_coord, coord::new(x, y - 1), owner))
+            || ((y < self.height - 1)
+                && self.is_front_of_enemy_tentacle(initial_coord, coord::new(x, y + 1), owner))
     }
 
-    fn is_front_of_tentacle(&self, initial_coord: Coord, tentacle_coord: Coord, owner: u8) -> bool {
+    fn is_front_of_enemy_tentacle(
+        &self,
+        initial_coord: Coord,
+        tentacle_coord: Coord,
+        owner: u8,
+    ) -> bool {
         let tentacle_cell = self.get_cell_from_coord(tentacle_coord);
         cell::is_tentacle(tentacle_cell)
             && cell::is_owned_by(tentacle_cell, 1 - owner)
@@ -219,9 +225,9 @@ impl Grid {
 
     fn contains_an_adjacent_organ(&self, x: u8, y: u8, owner: u8) -> bool {
         (x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner))
-            || cell::is_owned_by(self.get_cell(x + 1, y), owner)
+            || ((x < self.width - 1) && cell::is_owned_by(self.get_cell(x + 1, y), owner))
             || (y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner))
-            || cell::is_owned_by(self.get_cell(x, y + 1), owner)
+            || ((y < self.height - 1) && cell::is_owned_by(self.get_cell(x, y + 1), owner))
     }
 
     fn contains_an_adjacent_organ_with_same_root(&self, x: u8, y: u8, root_coord: Coord) -> bool {
@@ -438,6 +444,46 @@ mod tests {
         let grid = Grid::new(3, 3);
 
         let default_organ = organ::new(0, OrganType::Basic, OrganDirection::North, 0);
+
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
+            false
+        );
+    }
+
+    #[test]
+    fn test_can_add_organ_in_edge_should_true() {
+        let grid = Grid::new(3, 3);
+
+        let default_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
+
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
+            true
+        );
+    }
+
+    #[test]
+    fn test_can_add_organ_in_edge_should_false_canceled_by_tentacle() {
+        let mut grid = Grid::new(5, 5);
+        let tentacle_rival = organ::new(1, OrganType::Tentacle, OrganDirection::North, 1);
+        let default_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
+
+        grid.set_cell(2, 3, cell::new(false, None, Some(tentacle_rival)));
+
+        assert_eq!(
+            grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
+            false
+        );
+    }
+
+    #[test]
+    fn test_can_add_organ_in_edge_should_true_canceled_by_own_tentacle() {
+        let mut grid = Grid::new(5, 5);
+        let tentacle_rival = organ::new(0, OrganType::Tentacle, OrganDirection::North, 1);
+        let default_organ = organ::new(0, OrganType::Root, OrganDirection::North, 0);
+
+        grid.set_cell(2, 3, cell::new(false, None, Some(tentacle_rival)));
 
         assert_eq!(
             grid.can_add_organ_without_root_coord(coord::new(2, 2), default_organ),
