@@ -72,7 +72,7 @@ pub fn make_sporer_valid(
             if y_coord >= grid.height - 1 {
                 return action::wait();
             }
-            let adition_on_y = rand::random::<u8>() % (grid.height - y_coord);
+            let adition_on_y = (rand::random::<u8>() % (grid.height - 1 - y_coord)) + 1;
             action::set_coord_target(result, coord::new(x_coord, y_coord + adition_on_y))
         }
         _ => action::wait(),
@@ -231,5 +231,16 @@ mod tests {
         assert_eq!(action::get_type(valid_action), ActionType::Sporer);
         assert_eq!(action::get_direction(valid_action), OrganDirection::North);
         assert_eq!(action::get_coord_target(valid_action), coord::new(1, 0));
+    }
+
+    #[test]
+    fn test_make_sporer_valid_should_move_to_the_bottom() {
+        let grid = Grid::new(5, 5);
+        let last_action = action::sporer(OrganDirection::South, coord::new(1, 3), coord::new(0, 0));
+        let action = action::sporer(OrganDirection::South, coord::new(0, 0), coord::new(0, 0));
+        let valid_action = make_sporer_valid(last_action, action, &grid);
+        assert_eq!(action::get_type(valid_action), ActionType::Sporer);
+        assert_eq!(action::get_direction(valid_action), OrganDirection::South);
+        assert_eq!(action::get_coord_target(valid_action), coord::new(1, 4));
     }
 }
