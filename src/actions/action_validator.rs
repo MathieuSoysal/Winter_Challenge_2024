@@ -210,4 +210,15 @@ mod tests {
         assert_eq!(action::get_direction(valid_action), OrganDirection::East);
         assert_eq!(action::get_coord_target(valid_action), coord::new(4, 3));
     }
+
+    #[test]
+    fn test_make_sporer_valid_should_move_to_the_left() {
+        let grid = Grid::new(5, 5);
+        let last_action = action::sporer(OrganDirection::West, coord::new(1, 1), coord::new(0, 0));
+        let action = action::sporer(OrganDirection::West, coord::new(0, 0), coord::new(0, 0));
+        let valid_action = make_sporer_valid(last_action, action, &grid);
+        assert_eq!(action::get_type(valid_action), ActionType::Sporer);
+        assert_eq!(action::get_direction(valid_action), OrganDirection::West);
+        assert_eq!(action::get_coord_target(valid_action), coord::new(0, 1));
+    }
 }
