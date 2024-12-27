@@ -51,7 +51,7 @@ pub fn make_sporer_valid(
             if x_coord >= grid.width - 1 {
                 return action::wait();
             }
-            let adition_on_x = rand::random::<u8>() % (grid.width - x_coord);
+            let adition_on_x = (rand::random::<u8>() % (grid.width - 1 - x_coord)) + 1;
             action::set_coord_target(result, coord::new(x_coord + adition_on_x, y_coord))
         }
         OrganDirection::West => {
