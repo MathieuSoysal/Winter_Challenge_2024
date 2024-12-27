@@ -58,7 +58,7 @@ pub fn make_sporer_valid(
             if x_coord == 0 {
                 return action::wait();
             }
-            let substraction_on_x = rand::random::<u8>() % (x_coord + 1);
+            let substraction_on_x = (rand::random::<u8>() % x_coord) + 1;
             action::set_coord_target(result, coord::new(x_coord - substraction_on_x, y_coord))
         }
         OrganDirection::North => {
