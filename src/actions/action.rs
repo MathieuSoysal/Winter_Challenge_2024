@@ -119,6 +119,26 @@ pub fn is_valid(action: Action, grid: &Grid, player: &Player) -> bool {
         )
 }
 
+pub fn is_valid_with_root(action: Action, grid: &Grid, player: &Player) -> bool {
+    let action_type = get_type(action);
+    let coord_target = get_coord_target(action);
+    let coord_root = get_coord_source(action);
+    let direction = get_direction(action);
+    if ActionType::Wait == action_type {
+        return true;
+    }
+    let organ_type = if ActionType::Growth == action_type {
+        get_organ_type(action)
+    } else {
+        OrganType::Root
+    };
+    protein_wallet::can_buy_organ(player.get_wallet(), organ_type)
+        && grid.can_add_organ_with_root_coord(
+            coord_target,
+            organ::new(player.get_id(), organ_type, direction, coord_root),
+        )
+}
+
 #[cfg(test)]
 mod tests {
     use super::action_type::ActionType;
