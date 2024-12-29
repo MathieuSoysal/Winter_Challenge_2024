@@ -213,7 +213,7 @@ impl Grid {
         let mut coords = HashSet::new();
         let mut temp = HashSet::new();
         coords.insert(coord);
-        for i in 0..range {
+        for _ in 0..range {
             for c in coords.iter() {
                 temp.extend(self.get_adjacents_reachable_cells(*c, owner));
             }

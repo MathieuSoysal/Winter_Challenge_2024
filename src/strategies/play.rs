@@ -102,7 +102,7 @@ fn can_attack_enemy_organ_in_two_cell(
                     player.get_opponent_id(),
                 ) {
                     result = Some(organ_direction::get_direction_from_coord_to_coord(
-                        coord, opp_coord, grid,
+                        coord, opp_coord,
                     ));
                     if coord::x(opp_coord) == coord::x(coord)
                         || coord::y(opp_coord) == coord::y(coord)

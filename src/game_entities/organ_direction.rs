@@ -1,8 +1,4 @@
-use super::{
-    cell::{self, is_empty, Cell},
-    coord::{self, Coord},
-    grid::{self, Grid},
-};
+use super::coord::{self, Coord};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganDirection {
@@ -113,7 +109,7 @@ pub fn found_next_direction(src: Coord, dst: Coord) -> OrganDirection {
     OrganDirection::North
 }
 
-pub fn get_direction_from_coord_to_coord(src: Coord, dst: Coord, grid: &Grid) -> OrganDirection {
+pub fn get_direction_from_coord_to_coord(src: Coord, dst: Coord) -> OrganDirection {
     let abs_x = coord::x(src).abs_diff(coord::x(dst));
     let abs_y = coord::y(src).abs_diff(coord::y(dst));
     let x = coord::x(src);
