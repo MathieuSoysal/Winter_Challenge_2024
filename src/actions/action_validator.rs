@@ -2,7 +2,7 @@ use crate::game_entities::{
     coord, grid::Grid, organ, organ_direction::OrganDirection, organ_type::OrganType,
 };
 
-use super::{action, action_type::ActionType};
+use super::action;
 
 pub fn make_growth_valid(action: action::Action, grid: &Grid) -> action::Action {
     let x_coord = coord::x(action::get_coord_target(action));
@@ -82,7 +82,10 @@ pub fn make_sporer_valid(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::game_entities::{cell, organ_direction::OrganDirection, organ_type::OrganType};
+    use crate::{
+        actions::action_type::ActionType,
+        game_entities::{cell, organ_direction::OrganDirection, organ_type::OrganType},
+    };
 
     #[test]
     fn test_make_it_valid() {
