@@ -1,4 +1,8 @@
-use super::coord::{self, Coord};
+use super::{
+    cell::{self, is_empty, Cell},
+    coord::{self, Coord},
+    grid::{self, Grid},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OrganDirection {
@@ -107,6 +111,42 @@ pub fn found_next_direction(src: Coord, dst: Coord) -> OrganDirection {
         return OrganDirection::South;
     }
     OrganDirection::North
+}
+
+pub fn get_direction_from_coord_to_coord(src: Coord, dst: Coord, grid: &Grid) -> OrganDirection {
+    let abs_x = coord::x(src).abs_diff(coord::x(dst));
+    let abs_y = coord::y(src).abs_diff(coord::y(dst));
+    let x = coord::x(src);
+    let y = coord::y(src);
+    if abs_x == 2 {
+        if coord::x(src) < coord::x(dst) {
+            return OrganDirection::East;
+        } else {
+            return OrganDirection::West;
+        }
+    }
+    if abs_y == 2 {
+        if coord::y(src) < coord::y(dst) {
+            return OrganDirection::South;
+        } else {
+            return OrganDirection::North;
+        }
+    }
+    if abs_y == 1 || abs_x == 1 {
+        if x < coord::x(dst) {
+            return OrganDirection::East;
+        }
+        if x > coord::x(dst) {
+            return OrganDirection::West;
+        }
+        if y < coord::y(dst) {
+            return OrganDirection::South;
+        }
+        if y > coord::y(dst) {
+            return OrganDirection::North;
+        }
+    }
+    panic!("Invalid direction from {:?} to {:?}", src, dst);
 }
 
 #[cfg(test)]

@@ -1,6 +1,7 @@
 use std::io;
 pub mod actions;
 pub mod game_entities;
+pub mod strategies;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => {

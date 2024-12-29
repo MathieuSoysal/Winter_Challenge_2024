@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use super::{
     coord::Coord,
     organ::{self, Organ},
+    organ_type::OrganType,
     protein::Protein,
     protein_wallet::{self, ProteinWallet},
 };
@@ -28,6 +29,18 @@ impl Player {
         self.organs.insert(coord);
         if organ::is_root(organ) {
             self.roots.insert(coord);
+        }
+    }
+
+    pub fn can_buy(&self, organ_type: OrganType) -> bool {
+        protein_wallet::can_buy_organ(self.wallet, organ_type)
+    }
+
+    pub fn get_opponent_id(&self) -> u8 {
+        if self.id == 0 {
+            1
+        } else {
+            0
         }
     }
 

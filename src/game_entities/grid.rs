@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use crate::game_entities::organ_direction::OrganDirection;
+
 use super::{
     cell::{self, Cell},
     coord::{self, Coord},
@@ -48,44 +50,48 @@ impl Grid {
         self.get_cell(coord::x(coord), coord::y(coord))
     }
 
-    pub fn get_adjacent_coords(&self, coord: coord::Coord) -> Vec<coord::Coord> {
-        let mut adjacents = Vec::new();
+    pub fn get_adjacent_coords(&self, coord: coord::Coord) -> HashSet<coord::Coord> {
+        let mut adjacents = HashSet::with_capacity(4);
 
         let x = coord::x(coord);
         let y = coord::y(coord);
 
         if x > 0 && self.is_in_bounds(x - 1, y) {
-            adjacents.push(coord::new(x - 1, y));
+            adjacents.insert(coord::new(x - 1, y));
         }
         if self.is_in_bounds(x + 1, y) {
-            adjacents.push(coord::new(x + 1, y));
+            adjacents.insert(coord::new(x + 1, y));
         }
         if y > 0 && self.is_in_bounds(x, y - 1) {
-            adjacents.push(coord::new(x, y - 1));
+            adjacents.insert(coord::new(x, y - 1));
         }
         if self.is_in_bounds(x, y + 1) {
-            adjacents.push(coord::new(x, y + 1));
+            adjacents.insert(coord::new(x, y + 1));
         }
         adjacents
     }
 
-    pub fn get_adjacent_cells(&self, coord: coord::Coord) -> Vec<Cell> {
-        let mut adjacents = Vec::new();
+    pub fn get_children(&self, coord: coord::Coord) -> Option<&HashSet<coord::Coord>> {
+        self.cell_connections.get(&coord)
+    }
+
+    pub fn get_adjacent_cells(&self, coord: coord::Coord) -> HashSet<Cell> {
+        let mut adjacents = HashSet::with_capacity(4);
 
         let x = coord::x(coord);
         let y = coord::y(coord);
 
         if x > 0 && self.is_in_bounds(x - 1, y) {
-            adjacents.push(self.get_cell(x - 1, y));
+            adjacents.insert(self.get_cell(x - 1, y));
         }
         if self.is_in_bounds(x + 1, y) {
-            adjacents.push(self.get_cell(x + 1, y));
+            adjacents.insert(self.get_cell(x + 1, y));
         }
         if y > 0 && self.is_in_bounds(x, y - 1) {
-            adjacents.push(self.get_cell(x, y - 1));
+            adjacents.insert(self.get_cell(x, y - 1));
         }
         if self.is_in_bounds(x, y + 1) {
-            adjacents.push(self.get_cell(x, y + 1));
+            adjacents.insert(self.get_cell(x, y + 1));
         }
         adjacents
     }
@@ -100,13 +106,17 @@ impl Grid {
         if x > 0 && cell::is_owned_and_rooted_by(self.get_cell(x - 1, y), owner, root_coord) {
             return coord::new(x - 1, y);
         }
-        if cell::is_owned_and_rooted_by(self.get_cell(x + 1, y), owner, root_coord) {
+        if x < self.width - 1
+            && cell::is_owned_and_rooted_by(self.get_cell(x + 1, y), owner, root_coord)
+        {
             return coord::new(x + 1, y);
         }
         if y > 0 && cell::is_owned_and_rooted_by(self.get_cell(x, y - 1), owner, root_coord) {
             return coord::new(x, y - 1);
         }
-        if cell::is_owned_and_rooted_by(self.get_cell(x, y + 1), owner, root_coord) {
+        if y < self.height - 1
+            && cell::is_owned_and_rooted_by(self.get_cell(x, y + 1), owner, root_coord)
+        {
             return coord::new(x, y + 1);
         }
         panic!(
@@ -172,6 +182,59 @@ impl Grid {
         }
     }
 
+    pub fn get_adjacents_reachable_cells(&self, coord: Coord, owner: u8) -> HashSet<Coord> {
+        let mut adjacents = HashSet::new();
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        let organ = organ::new(owner, OrganType::Basic, OrganDirection::North, coord);
+        if x > 0 && self.can_add_organ_without_root_coord(coord::new(x - 1, y), organ) {
+            adjacents.insert(coord::new(x - 1, y));
+        }
+        if x < self.width - 1 && self.can_add_organ_without_root_coord(coord::new(x + 1, y), organ)
+        {
+            adjacents.insert(coord::new(x + 1, y));
+        }
+        if y > 0 && self.can_add_organ_without_root_coord(coord::new(x, y - 1), organ) {
+            adjacents.insert(coord::new(x, y - 1));
+        }
+        if y < self.height - 1 && self.can_add_organ_without_root_coord(coord::new(x, y + 1), organ)
+        {
+            adjacents.insert(coord::new(x, y + 1));
+        }
+        adjacents
+    }
+
+    pub fn get_reachable_coords_in_range(
+        &self,
+        coord: Coord,
+        range: usize,
+        owner: u8,
+    ) -> HashSet<Coord> {
+        let mut coords = HashSet::new();
+        let mut temp = HashSet::new();
+        coords.insert(coord);
+        for i in 0..range {
+            for c in coords.iter() {
+                temp.extend(self.get_adjacents_reachable_cells(*c, owner));
+            }
+            coords = temp;
+            temp = HashSet::new();
+        }
+        coords
+    }
+
+    pub fn get_opponent_in_three_cells(&self, coord: Coord, opponent: u8) -> Option<Coord> {
+        let reachable_coors_in_two = self.get_reachable_coords_in_range(coord, 2, opponent);
+        for c in reachable_coors_in_two.iter() {
+            let x = coord::x(*c);
+            let y = coord::y(*c);
+            if let Some(opp) = self.get_an_adjacent_organ(x, y, opponent) {
+                return Some(opp);
+            }
+        }
+        None
+    }
+
     pub fn can_add_organ_without_root_coord(&self, dest: Coord, organ: Organ) -> bool {
         let x = coord::x(dest);
         let y = coord::y(dest);
@@ -223,11 +286,74 @@ impl Grid {
             )
     }
 
-    fn contains_an_adjacent_organ(&self, x: u8, y: u8, owner: u8) -> bool {
+    pub fn get_direction_to_an_adjacent_organ(
+        &self,
+        coord: Coord,
+        owner: u8,
+    ) -> Option<OrganDirection> {
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        if x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner) {
+            return Some(OrganDirection::West);
+        }
+        if x < self.width - 1 && cell::is_owned_by(self.get_cell(x + 1, y), owner) {
+            return Some(OrganDirection::East);
+        }
+        if y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner) {
+            return Some(OrganDirection::North);
+        }
+        if y < self.height - 1 && cell::is_owned_by(self.get_cell(x, y + 1), owner) {
+            return Some(OrganDirection::South);
+        }
+        None
+    }
+
+    pub fn contains_an_adjacent_protein(&self, x: u8, y: u8) -> bool {
+        (x > 0 && cell::is_protein(self.get_cell(x - 1, y)))
+            || ((x < self.width - 1) && cell::is_protein(self.get_cell(x + 1, y)))
+            || (y > 0 && cell::is_protein(self.get_cell(x, y - 1)))
+            || ((y < self.height - 1) && cell::is_protein(self.get_cell(x, y + 1)))
+    }
+
+    pub fn get_direction_to_an_adjacent_protein(&self, coord: Coord) -> Option<OrganDirection> {
+        let x = coord::x(coord);
+        let y = coord::y(coord);
+        if x > 0 && cell::is_protein(self.get_cell(x - 1, y)) {
+            return Some(OrganDirection::East);
+        }
+        if x < self.width - 1 && cell::is_protein(self.get_cell(x + 1, y)) {
+            return Some(OrganDirection::West);
+        }
+        if y > 0 && cell::is_protein(self.get_cell(x, y - 1)) {
+            return Some(OrganDirection::South);
+        }
+        if y < self.height - 1 && cell::is_protein(self.get_cell(x, y + 1)) {
+            return Some(OrganDirection::North);
+        }
+        None
+    }
+
+    pub fn contains_an_adjacent_organ(&self, x: u8, y: u8, owner: u8) -> bool {
         (x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner))
             || ((x < self.width - 1) && cell::is_owned_by(self.get_cell(x + 1, y), owner))
             || (y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner))
             || ((y < self.height - 1) && cell::is_owned_by(self.get_cell(x, y + 1), owner))
+    }
+
+    pub fn get_an_adjacent_organ(&self, x: u8, y: u8, owner: u8) -> Option<Coord> {
+        if x > 0 && cell::is_owned_by(self.get_cell(x - 1, y), owner) {
+            return Some(coord::new(x - 1, y));
+        }
+        if x < self.width - 1 && cell::is_owned_by(self.get_cell(x + 1, y), owner) {
+            return Some(coord::new(x + 1, y));
+        }
+        if y > 0 && cell::is_owned_by(self.get_cell(x, y - 1), owner) {
+            return Some(coord::new(x, y - 1));
+        }
+        if y < self.height - 1 && cell::is_owned_by(self.get_cell(x, y + 1), owner) {
+            return Some(coord::new(x, y + 1));
+        }
+        None
     }
 
     fn contains_an_adjacent_organ_with_same_root(&self, x: u8, y: u8, root_coord: Coord) -> bool {
@@ -331,16 +457,13 @@ mod tests {
     #[test]
     fn test_get_adjacent_coords() {
         let grid = Grid::new(3, 3);
+        let adjacent_coords = grid.get_adjacent_coords(coord::new(1, 1));
 
-        assert_eq!(
-            grid.get_adjacent_coords(coord::new(1, 1)),
-            vec![
-                coord::new(0, 1),
-                coord::new(2, 1),
-                coord::new(1, 0),
-                coord::new(1, 2)
-            ]
-        );
+        assert_eq!(adjacent_coords.len(), 4);
+        assert!(adjacent_coords.contains(&coord::new(0, 1)));
+        assert!(adjacent_coords.contains(&coord::new(2, 1)));
+        assert!(adjacent_coords.contains(&coord::new(1, 0)));
+        assert!(adjacent_coords.contains(&coord::new(1, 2)));
     }
 
     #[test]
@@ -353,13 +476,10 @@ mod tests {
         grid.set_cell(2, 1, cell::new(true, None, None));
 
         assert_eq!(
-            grid.get_adjacent_cells(coord::new(1, 1)),
-            vec![
-                cell::new(true, None, None),
-                cell::new(true, None, None),
-                cell::new(true, None, None),
-                cell::new(true, None, None)
-            ]
+            grid.get_adjacent_cells(coord::new(1, 1))
+                .iter()
+                .all(|&cell| cell::is_obstacle(cell)),
+            true
         );
     }
 
@@ -367,10 +487,10 @@ mod tests {
     fn test_get_adjacent_cells_out_of_bounds() {
         let grid = Grid::new(3, 3);
 
-        assert_eq!(
-            grid.get_adjacent_cells(coord::new(0, 0)),
-            vec![cell::new(false, None, None), cell::new(false, None, None)]
-        );
+        assert!(grid
+            .get_adjacent_cells(coord::new(0, 0))
+            .iter()
+            .all(|&cell| cell::is_empty(cell)));
     }
 
     #[test]
